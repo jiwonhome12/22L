@@ -5,7 +5,7 @@
         WindowStartupLocation="CenterScreen" Background="#F3F4F6"
         MinHeight="720" MinWidth="1100">
 
-    <Window.Resources>
+    <Window.Resources> 
         <!-- Modern Scrollbar Style -->
         <Style TargetType="ScrollBar">
             <!-- Simplified standard styling for scrollbars -->
@@ -171,7 +171,7 @@
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <TextBlock Text="🗄️" FontSize="18" Foreground="#EA580C" VerticalAlignment="Center" Margin="0,0,8,0"/>
                                 <StackPanel>
-                                    <TextBlock Text="캐비닛 승인 대기" FontSize="10" Foreground="#9A3412" FontWeight="Bold"/>
+                                    <TextBlock Text="캐비닛" FontSize="10" Foreground="#9A3412" FontWeight="Bold"/>
                                     <TextBlock x:Name="TxtCabinetCount" Text="0건" FontSize="12" Foreground="#EA580C" FontWeight="Bold"/>
                                     <TextBlock Text="승인 필요" FontSize="9" Foreground="#9A3412"/>
                                 </StackPanel>
@@ -183,7 +183,7 @@
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <TextBlock Text="🔧" FontSize="18" Foreground="#DC2626" VerticalAlignment="Center" Margin="0,0,8,0"/>
                                 <StackPanel>
-                                    <TextBlock Text="기자재 반납" FontSize="10" Foreground="#991B1B" FontWeight="Bold"/>
+                                    <TextBlock Text="기자재" FontSize="10" Foreground="#991B1B" FontWeight="Bold"/>
                                     <TextBlock x:Name="TxtEquipmentCount" Text="0건" FontSize="12" Foreground="#DC2626" FontWeight="Bold"/>
                                     <TextBlock Text="반납 필요" FontSize="9" Foreground="#991B1B"/>
                                 </StackPanel>
@@ -261,7 +261,8 @@
 
                             <!-- Action Buttons -->
                             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                <Button Content="🔄 새로고침" Style="{StaticResource ActionBarBtn}" Margin="0,0,8,0" Click="BtnRefresh_Click"/>
+                                <Button x:Name="BtnRefresh" Content="🔄" Width="35" Height="35" Style="{StaticResource ActionBarBtn}" Margin="0,0,8,0" Click="BtnRefresh_Click"/>
+                                <Button x:Name="BtnSyncData" Content="데이터 동기화" Style="{StaticResource ActionBarBtn}" Margin="0,0,8,0" Click="BtnSyncData_Click"/>
                                 <Button Content="랜덤 배정" Style="{StaticResource ActionBarBtn}" Margin="0,0,8,0" Click="BtnRandomAllocation_Click"/>
                                 <Button x:Name="BtnSeatFixMode" Content="좌석 고정 모드" Style="{StaticResource ActionBarBtn}" Margin="0,0,8,0" Click="BtnSeatFixMode_Click"/>
                                 <Button x:Name="BtnSeatDeleteMode" Content="좌석 데이터 삭제" Style="{StaticResource ActionBarBtn}" Click="BtnSeatDeleteMode_Click"/>
@@ -324,7 +325,7 @@
                             <StackPanel Grid.Row="2" Margin="0,10,0,0">
                                 <TextBox x:Name="TxtNewMemo" Height="60" TextWrapping="Wrap" AcceptsReturn="True" 
                                          BorderBrush="#D1D5DB" BorderThickness="1" Margin="0,0,0,8" Padding="5"/>
-                                <Button Content="+ 메모 추가" Background="#2563EB" Foreground="White" BorderThickness="0" 
+                                <Button x:Name="BtnAddMemo" Content="+ 메모 추가" Background="#2563EB" Foreground="White" BorderThickness="0" 
                                         Padding="0,8" FontWeight="Bold" Cursor="Hand" Click="BtnAddMemo_Click">
                                     <Button.Resources>
                                         <Style TargetType="Border">
@@ -572,7 +573,7 @@
                     </Border>
 
                     <!-- Section 2: Cabinet Layout -->
-                    <ScrollViewer Grid.Row="6" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Margin="0,10,0,10">
+                    <ScrollViewer Grid.Row="5" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Margin="0,10,0,10">
                         <StackPanel HorizontalAlignment="Center">
                             <!-- Upper Cabinet Block (1-24) -->
                             <Border BorderBrush="#D1D5DB" BorderThickness="1" Background="White" Padding="10" CornerRadius="8" Margin="0,0,0,15">
@@ -587,7 +588,7 @@
                     </ScrollViewer>
 
                     <!-- Bottom Status Counters -->
-                    <StackPanel Grid.Row="7" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10,0,0">
+                    <StackPanel Grid.Row="6" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10,0,0">
                         <Border BorderBrush="#D1D5DB" BorderThickness="1.5" CornerRadius="6" Background="White" Padding="15,6" Margin="0,0,15,0">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="사용 가능한 캐비닛 : " FontSize="12" FontWeight="SemiBold" Foreground="#374151"/>
@@ -727,6 +728,7 @@
                 <Grid x:Name="TabDataManage" Visibility="Collapsed" Background="#F9FAFB" Margin="20">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
@@ -735,7 +737,17 @@
                         <TextBlock Text="구글 폼 연동 마스터 데이터입니다. 여기서 수정/삭제해도 대시보드의 현재 좌석 데이터가 즉시 손실되지 않습니다." FontSize="12" Foreground="#6B7280" Margin="0,4,0,0"/>
                     </StackPanel>
 
-                    <Border Grid.Row="1" Background="White" BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="8" Padding="15">
+                    <!-- Student Search Bar -->
+                    <Border Grid.Row="1" Background="White" BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="8" Padding="15" Margin="0,0,0,15">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="검색어 (학번/이름/지도교수): " FontSize="13" FontWeight="SemiBold" Foreground="#374151" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <TextBox x:Name="TxtSearchStudent" Width="200" Padding="5" VerticalContentAlignment="Center" KeyUp="TxtSearchStudent_KeyUp" Margin="0,0,10,0"/>
+                            <Button Content="🔍 검색" Style="{StaticResource ActionBarBtn}" Padding="15,6" Click="BtnSearchStudent_Click" Margin="0,0,5,0"/>
+                            <Button Content="🔄 전체보기" Style="{StaticResource ActionBarBtn}" Padding="15,6" Click="BtnClearStudentSearch_Click"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Row="2" Background="White" BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="8" Padding="15">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -760,7 +772,7 @@
                                         <TextBlock Text="학생 정보 상세" FontSize="14" FontWeight="Bold" Foreground="#374151" Margin="0,0,0,10"/>
 
                                         <TextBlock Text="학번" FontSize="11" Foreground="#6B7280"/>
-                                        <TextBox x:Name="TxtMasterId" Margin="0,2,0,8" Padding="5" IsReadOnly="True" Background="#F3F4F6"/>
+                                        <TextBox x:Name="TxtMasterId" Margin="0,2,0,8" Padding="5"/>
 
                                         <TextBlock Text="이름" FontSize="11" Foreground="#6B7280"/>
                                         <TextBox x:Name="TxtMasterName" Margin="0,2,0,8" Padding="5"/>
@@ -797,6 +809,14 @@
                                 <TextBlock Text="구글 폼 연동 설정" FontSize="14" FontWeight="Bold" Foreground="#374151" Margin="0,15,0,10"/>
                                 <TextBlock Text="구글 폼 URL" FontSize="11" Foreground="#6B7280" Margin="0,0,0,4"/>
                                 <TextBox x:Name="TxtGoogleFormUrl" Height="35" BorderBrush="#D1D5DB" BorderThickness="1" Padding="10" Margin="0,0,0,15" VerticalAlignment="Center"/>
+
+                                <TextBlock Text="화면 해상도 설정" FontSize="14" FontWeight="Bold" Foreground="#374151" Margin="0,10,0,10"/>
+                                <ComboBox x:Name="ComboResolution" Width="200" Padding="5" HorizontalAlignment="Left" Margin="0,0,0,15" SelectedIndex="0" SelectionChanged="ComboResolution_SelectionChanged">
+                                    <ComboBoxItem Content="기본 (1200 x 780)"/>
+                                    <ComboBoxItem Content="소형 (1024 x 768)"/>
+                                    <ComboBoxItem Content="중형 (1440 x 900)"/>
+                                    <ComboBoxItem Content="대형 (1920 x 1080)"/>
+                                </ComboBox>
 
                                 <TextBlock Text="구글 폼 데이터 동기화 시뮬레이터" FontSize="14" FontWeight="Bold" Foreground="#374151" Margin="0,10,0,10"/>
                                 <Button Content="📥 새로운 구글폼 신청 데이터 수신 (시뮬레이션)" HorizontalAlignment="Left" Padding="15,8" Style="{StaticResource ActionBarBtn}" Click="BtnSimulateFormSubmission_Click"/>
@@ -861,26 +881,26 @@
 
                             <!-- Column 1 -->
                             <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal">
-                                <TextBlock Text="이름 : " FontSize="20" FontWeight="Bold" Foreground="Black"/>
-                                <TextBlock x:Name="TxtModalName" Text="홍길동" FontSize="20" FontWeight="Bold" Foreground="Black"/>
+                                <TextBlock Text="이름 : " FontSize="20" FontWeight="Bold" Foreground="Black" VerticalAlignment="Center"/>
+                                <TextBox x:Name="TxtModalName" Text="홍길동" FontSize="20" FontWeight="Bold" Foreground="Black" BorderThickness="0" Background="Transparent" IsReadOnly="True" VerticalAlignment="Center"/>
                             </StackPanel>
                             <StackPanel Grid.Row="2" Grid.Column="0" Orientation="Horizontal">
-                                <TextBlock Text="지도 교수 : " FontSize="20" FontWeight="Bold" Foreground="Black"/>
-                                <TextBlock x:Name="TxtModalAdvisor" Text="김선용" FontSize="20" FontWeight="Bold" Foreground="Black"/>
+                                <TextBlock Text="지도 교수 : " FontSize="20" FontWeight="Bold" Foreground="Black" VerticalAlignment="Center"/>
+                                <TextBox x:Name="TxtModalAdvisor" Text="김선용" FontSize="20" FontWeight="Bold" Foreground="Black" BorderThickness="0" Background="Transparent" IsReadOnly="True" VerticalAlignment="Center"/>
                             </StackPanel>
                             <StackPanel Grid.Row="4" Grid.Column="0" Orientation="Horizontal">
-                                <TextBlock Text="이메일 : " FontSize="20" FontWeight="Bold" Foreground="Black"/>
-                                <TextBlock x:Name="TxtModalEmail" Text="gildong123@naver.com" FontSize="20" FontWeight="Bold" Foreground="Black"/>
+                                <TextBlock Text="이메일 : " FontSize="20" FontWeight="Bold" Foreground="Black" VerticalAlignment="Center"/>
+                                <TextBox x:Name="TxtModalEmail" Text="gildong123@naver.com" FontSize="20" FontWeight="Bold" Foreground="Black" BorderThickness="0" Background="Transparent" IsReadOnly="True" VerticalAlignment="Center" Width="300"/>
                             </StackPanel>
 
                             <!-- Column 2 -->
                             <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" Margin="20,0,0,0">
-                                <TextBlock Text="소속 : " FontSize="20" FontWeight="Bold" Foreground="Black"/>
-                                <TextBlock x:Name="TxtModalDept" Text="소프트웨어 전공" FontSize="20" FontWeight="Bold" Foreground="Black"/>
+                                <TextBlock Text="소속 : " FontSize="20" FontWeight="Bold" Foreground="Black" VerticalAlignment="Center"/>
+                                <TextBox x:Name="TxtModalDept" Text="소프트웨어 전공" FontSize="20" FontWeight="Bold" Foreground="Black" BorderThickness="0" Background="Transparent" IsReadOnly="True" VerticalAlignment="Center"/>
                             </StackPanel>
                             <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal" Margin="20,0,0,0">
-                                <TextBlock Text="학번 : " FontSize="20" FontWeight="Bold" Foreground="Black"/>
-                                <TextBlock x:Name="TxtModalId" Text="20261234" FontSize="20" FontWeight="Bold" Foreground="Black"/>
+                                <TextBlock Text="학번 : " FontSize="20" FontWeight="Bold" Foreground="Black" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="TxtModalId" Text="20261234" FontSize="20" FontWeight="Bold" Foreground="Black" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Grid>
 

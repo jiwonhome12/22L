@@ -6,7 +6,7 @@ namespace SeatManagerApp
     public class AttendanceRecord
     {
         public string DateString { get; set; } = string.Empty;
-        public string Status { get; set; } = string.Empty; // "출석", "결석", "지각"
+        public string Status { get; set; } = string.Empty; // "출석", "결석", "지각" 
     }
 
     public class StudentInfo

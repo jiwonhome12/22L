@@ -10,7 +10,7 @@ $fileFilter = @("*.xaml", "*.xaml.cs", "*.cs")
 
 Write-Host "================================" -ForegroundColor Cyan
 Write-Host "SeatManagerApp Auto Build & Run" -ForegroundColor Cyan
-Write-Host "================================" -ForegroundColor Cyan
+Write-Host "================================" -ForegroundColor Cyan 
 Write-Host ""
 Write-Host "감시 경로: $projectPath" -ForegroundColor Yellow
 Write-Host "코드 변경을 감시하고 있습니다..." -ForegroundColor Yellow

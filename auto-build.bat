@@ -8,6 +8,6 @@ echo ================================================
 echo.
 echo 코드가 변경될 때마다 자동으로 빌드하고 실행됩니다.
 echo 종료하려면 이 창을 닫거나 Ctrl+C를 누르세요.
-echo.
+echo. 
 powershell -ExecutionPolicy Bypass -File "%~dp0auto-build.ps1"
 pause

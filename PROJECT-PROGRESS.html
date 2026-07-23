@@ -9,6 +9,7 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            1. 파일 전체 경로 확인 • 예: C:\Users\me\Documents\file.txt • 이후 예시 명령은 이 전체 경로로 교체하세요. 2. 읽기전용 속성 확인/해제 • 확인: attrib "C:\경로\파일" • 해제: attrib -R "C:\경로\파일" • (해제 후에도 잠금이면 다음 단계로) 3. 소유권/권한 문제 해결 • 소유권 가져오기: takeown /f "C:\경로\파일" • 권한 부여: icacls "C:\경로\파일" /grant "%USERNAME%":F 4. 어떤 프로세스가 파일을 점유하는지 확인 (GUI: Resource Monitor) • 실행: Win+R -> resmon -> CPU 탭 -> Associated Handles 검색창에 파일 이름(또는 전체 경로 일부) 입력 • 점유 프로세스(PID)를 확인 → 해당 프로세스 선택 후 End Process 5. 어떤 프로세스가 점유하는지 확인 (도구 사용) • Sysinternals의 handle.exe 또는 Process Explorer 사용 권장 • handle.exe 사용 예: handle.exe "C:\경로\파일" (관리자 권한) • 결과로 나온 PID를 강제 종료: taskkill /PID <PID> /F • Process Explorer: 관리자 권한으로 실행 → Find -> Find Handle or DLL -> 파일명 검색 → 해당 프로세스 우클릭 -> Kill Process 또는 Close Handle 6. 탐색기(Explorer)가 파일을 잡고 있을 경우 • 탐색기 재시작: taskkill /F /IM explorer.exe && start explorer.exe 7. 안티바이러스/백업 소프트웨어 확인 • AV가 스캔 중이면 잠시 실시간 보호 끄거나 AV 로그에서 프로세스 확인 후 중지 8. 마지막 수단: 안전 모드 또는 재부팅 • 안전모드로 부팅하면 대부분의 사용자 프로세스가 실행되지 않아 잠금 해제 가능 • 또는 시스템 재부팅 후 파일 접근
         }
 
         body {
