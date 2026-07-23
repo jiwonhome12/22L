@@ -24,9 +24,11 @@ namespace SeatManagerApp
         // Equipment Rentals
         private ObservableCollection<RentalItem> _rentals = new ObservableCollection<RentalItem>();
         private Stack<RentalItem> _rentalUndoStack = new Stack<RentalItem>();
+        private List<RentalItem> _rentalHistory = new List<RentalItem>();
 
         // Cabinet & SangsangLab Google Form Approvals
         private ObservableCollection<ApprovalRequest> _approvals = new ObservableCollection<ApprovalRequest>();
+        private List<ApprovalRequest> _approvalHistory = new List<ApprovalRequest>();
 
         // Memos
         private ObservableCollection<MemoItem> _memos = new ObservableCollection<MemoItem>();
@@ -48,6 +50,8 @@ namespace SeatManagerApp
         private string? _originalMemoContent;
 
         private bool _isModalEditing = false;
+        private int _currentEditingCabinetNum = 0;
+        private bool _isCabinetModalEditing = false;
 
         public MainWindow()
         {
@@ -78,6 +82,12 @@ namespace SeatManagerApp
             SetupCabinetAndSangsangLabDemoData();
             SetupRentalDemoData();
             SetupMemoDemoData();
+
+            // Setup Google Form default placeholders
+            TxtSangsangLabFormUrl.Text = "https://docs.google.com/forms/d/e/1FAIpQLSfD_sangsang_lab_form/viewform";
+            TxtCabinetFormUrl.Text = "https://docs.google.com/forms/d/e/1FAIpQLSdC_cabinet_rental_form/viewform";
+            TxtEquipmentFormUrl.Text = "https://docs.google.com/forms/d/e/1FAIpQLScE_equipment_rental_form/viewform";
+            TxtGoogleFormApiKey.Text = "AIzaSyA_example_google_forms_api_key_2026";
 
             // Refresh UI Badges
             UpdateAlertBadges();
@@ -116,80 +126,39 @@ namespace SeatManagerApp
 
         private void SetupMasterDatabase()
         {
-            // Preset names matching the screenshot
-            var names = new[] {
-                "임진섭", "김지원", "송유진", "문현수", "현길용", "박주은", "이인한",
-                "이소빈", "김동욱", "김보경", "전상우", "김지원", "김지명", "허서현",
-                "성지경", "장지환", "김지민", "김동욱", "김연준", "서채빈", "강호석",
-                "민길홍", "임지규", "임시현", "이예원", "남지양", "권도균", "배지민"
-            };
+            // Start clean without regular student dummy data
 
-            var departments = new[] { "컴퓨터공학과", "소프트웨어융합학과", "정보보안학과", "게임공학과" };
-            var professors = new[] { "김동욱 교수", "이지현 교수", "박상우 교수", "최준호 교수" };
-
-            Random rand = new Random(101); // Fixed seed for reproducible student ids
-            int idBase = 20210000;
-
-            for (int i = 0; i < names.Length; i++)
+            // Add 10 graduate students to master database for seats 43~52
+            string[] gradNames = { "박지성", "손흥민", "김연아", "황희찬", "이강인", "안세영", "신유빈", "우상혁", "김우진", "임시현" };
+            string[] gradDepts = { "대학원 컴퓨터공학과", "대학원 정보보안학과", "대학원 게임공학과", "대학원 소프트웨어융합학과" };
+            for (int i = 0; i < gradNames.Length; i++)
             {
-                var s = new StudentInfo
+                var grad = new StudentInfo
                 {
-                    StudentId = (idBase + rand.Next(10000, 99999)).ToString(),
-                    Name = names[i],
-                    Department = departments[rand.Next(departments.Length)],
-                    Advisor = professors[rand.Next(professors.Length)],
-                    Email = $"student{i}@dsu.ac.kr"
+                    Name = gradNames[i],
+                    StudentId = "2020" + (5555 + i).ToString(),
+                    Department = gradDepts[i % gradDepts.Length],
+                    Advisor = "김동욱 교수",
+                    Email = $"grad{i}@dsu.ac.kr"
                 };
-
-                // Add 3 days of attendance
-                s.Attendance.Add(new AttendanceRecord { DateString = "2026-07-13", Status = rand.Next(10) < 8 ? "출석" : "지각" });
-                s.Attendance.Add(new AttendanceRecord { DateString = "2026-07-14", Status = rand.Next(10) < 8 ? "출석" : "결석" });
-                s.Attendance.Add(new AttendanceRecord { DateString = "2026-07-15", Status = "출석" });
-
-                _masterStudents.Add(s);
+                grad.Attendance.Add(new AttendanceRecord { DateString = "2026-07-13", Status = "출석" });
+                grad.Attendance.Add(new AttendanceRecord { DateString = "2026-07-14", Status = "출석" });
+                grad.Attendance.Add(new AttendanceRecord { DateString = "2026-07-15", Status = "출석" });
+                _masterStudents.Add(grad);
             }
-
-            // Add graduate students to master database
-            _masterStudents.Add(new StudentInfo { Name = "박지성", StudentId = "20205555", Department = "대학원 컴퓨터공학과", Advisor = "김동욱 교수", Email = "jisung@dsu.ac.kr" });
-            _masterStudents.Add(new StudentInfo { Name = "손흥민", StudentId = "20206666", Department = "대학원 정보보안학과", Advisor = "이지현 교수", Email = "son@dsu.ac.kr" });
 
             GridMasterStudents.ItemsSource = _masterStudents;
         }
 
         private void SetupCabinetAndSangsangLabDemoData()
         {
-            // Simulate 7 pending Google Forms submissions to match the screenshot "승인 대기 7건"
-            _approvals.Add(new ApprovalRequest { StudentName = "홍길동", StudentId = "20231102", Department = "컴퓨터공학과", Advisor = "김동욱 교수", TabType = "상상Lab" });
-            _approvals.Add(new ApprovalRequest { StudentName = "이영희", StudentId = "20220456", Department = "정보보안학과", Advisor = "이지현 교수", TabType = "상상Lab" });
-            _approvals.Add(new ApprovalRequest { StudentName = "박철수", StudentId = "20240911", Department = "게임공학과", Advisor = "최준호 교수", TabType = "상상Lab" });
-            _approvals.Add(new ApprovalRequest { StudentName = "최영선", StudentId = "20210872", Department = "소프트웨어융합학과", Advisor = "박상우 교수", TabType = "상상Lab" });
-
-            _approvals.Add(new ApprovalRequest { StudentName = "강민호", StudentId = "20251142", Department = "컴퓨터공학과", Advisor = "김동욱 교수", TabType = "캐비닛" });
-            _approvals.Add(new ApprovalRequest { StudentName = "윤하은", StudentId = "20231509", Department = "정보보안학과", Advisor = "이지현 교수", TabType = "캐비닛" });
-            _approvals.Add(new ApprovalRequest { StudentName = "정승우", StudentId = "20221199", Department = "게임공학과", Advisor = "최준호 교수", TabType = "캐비닛" });
-
-            // Initialize cabinet allocations dictionary
-            _cabinetAllocations[4] = (new StudentInfo { Name = "홍길동", StudentId = "20261234", Department = "컴퓨터공학과" }, "07/16~08/16");
-            _cabinetAllocations[13] = (new StudentInfo { Name = "이영희", StudentId = "20220456", Department = "정보보안학과" }, "07/16~08/16");
-            _cabinetAllocations[20] = (new StudentInfo { Name = "박철수", StudentId = "20240911", Department = "게임공학과" }, "07/16~08/16");
-            _cabinetAllocations[35] = (new StudentInfo { Name = "최영선", StudentId = "20210872", Department = "소프트웨어융합학과" }, "07/16~08/16");
-            _cabinetAllocations[42] = (new StudentInfo { Name = "강민호", StudentId = "20251142", Department = "컴퓨터공학과" }, "07/16~08/16");
-
             LstSangsangLabCards.ItemsSource = _approvals.Where(a => a.TabType == "상상Lab").ToList();
             GridCabinetApprovals.ItemsSource = _approvals.Where(a => a.TabType == "캐비닛").ToList();
         }
 
         private void SetupRentalDemoData()
         {
-            // 2 overdue rentals (Red light) to match screenshot "긴급 요청 2건"
-            _rentals.Add(new RentalItem { StudentName = "임진섭", EquipmentType = "VR 헤드셋 Oculus Quest 2", RentalDate = _currentSimulatedDate.AddDays(-10), RentalPeriodDays = 7 });
-            _rentals.Add(new RentalItem { StudentName = "김지원", EquipmentType = "iPad Pro 12.9 + Apple Pencil", RentalDate = _currentSimulatedDate.AddDays(-8), RentalPeriodDays = 7 });
-
-            // In-period rentals (Green light)
-            _rentals.Add(new RentalItem { StudentName = "송유진", EquipmentType = "Arduino IoT Starter Kit", RentalDate = _currentSimulatedDate.AddDays(-2), RentalPeriodDays = 7 });
-            _rentals.Add(new RentalItem { StudentName = "문현수", EquipmentType = "Raspberry Pi 4 Model B", RentalDate = _currentSimulatedDate.AddDays(-1), RentalPeriodDays = 7 });
-
-            GridRentals.ItemsSource = _rentals;
+            BindEquipmentRentals();
         }
 
         private void SetupMemoDemoData()
@@ -206,14 +175,20 @@ namespace SeatManagerApp
             // SangsangLab approval count
             int sangsangLabCount = _approvals.Count(a => a.Status == "승인 대기" && a.TabType == "상상Lab");
             TxtSangsangLabCount.Text = $"{sangsangLabCount}건";
+            if (CardSangsangLabAlert != null)
+                CardSangsangLabAlert.Visibility = sangsangLabCount > 0 ? Visibility.Visible : Visibility.Collapsed;
 
             // Cabinet approval count
             int cabinetCount = _approvals.Count(a => a.Status == "승인 대기" && a.TabType == "캐비닛");
             TxtCabinetCount.Text = $"{cabinetCount}건";
+            if (CardCabinetAlert != null)
+                CardCabinetAlert.Visibility = cabinetCount > 0 ? Visibility.Visible : Visibility.Collapsed;
 
-            // Equipment overdue count
-            int overdueCount = _rentals.Count(r => !r.IsReturned && r.DueDate < _currentSimulatedDate);
-            TxtEquipmentCount.Text = $"{overdueCount}건";
+            // Equipment pending approval count
+            int equipmentCount = _approvals.Count(a => a.Status == "승인 대기" && a.TabType == "기자재");
+            TxtEquipmentCount.Text = $"{equipmentCount}건";
+            if (CardEquipmentAlert != null)
+                CardEquipmentAlert.Visibility = equipmentCount > 0 ? Visibility.Visible : Visibility.Collapsed;
 
             // Sync other counts in tabs
             if (TxtEquipmentPendingCount != null)
@@ -229,10 +204,10 @@ namespace SeatManagerApp
                 TxtCabinetPendingCount.Text = $"{_approvals.Count(a => a.TabType == "캐비닛")}건";
 
             if (TxtRentedCabinetCount != null)
-                TxtRentedCabinetCount.Text = "5개";
+                TxtRentedCabinetCount.Text = $"{_cabinetAllocations.Count}개";
 
             if (TxtAvailableCabinetCount != null)
-                TxtAvailableCabinetCount.Text = "43개";
+                TxtAvailableCabinetCount.Text = $"{48 - _cabinetAllocations.Count}개";
 
             if (TxtSangsangLabPendingCount != null)
                 TxtSangsangLabPendingCount.Text = $"{_approvals.Count(a => a.TabType == "상상Lab")}건";
@@ -270,28 +245,11 @@ namespace SeatManagerApp
             if (tabGrid == TabEquipment)
             {
                 GridEquipmentApprovals.ItemsSource = null;
-                GridEquipmentApprovals.ItemsSource = _approvals.Where(a => a.TabType == "기자재" || a.TabType == "기자재 대여").ToList(); // Empty skeleton list or simulated approvals
-                if (!_approvals.Any(a => a.TabType == "기자재"))
-                {
-                    // Seed some dummy equipment approvals matching Screenshot 2 (3 pending requests)
-                    var equipReqs = new List<ApprovalRequest>
-                    {
-                        new ApprovalRequest { StudentName = "강민호", StudentId = "20251142", Department = "컴퓨터공학과", Advisor = "김동욱 교수", TabType = "기자재", RequestDate = _currentSimulatedDate.AddHours(-2) },
-                        new ApprovalRequest { StudentName = "윤하은", StudentId = "20231509", Department = "정보보안학과", Advisor = "이지현 교수", TabType = "기자재", RequestDate = _currentSimulatedDate.AddHours(-2) },
-                        new ApprovalRequest { StudentName = "정승우", StudentId = "20221199", Department = "게임공학과", Advisor = "최준호 교수", TabType = "기자재", RequestDate = _currentSimulatedDate.AddHours(-2) }
-                    };
-                    foreach (var req in equipReqs)
-                    {
-                        if (!_approvals.Any(a => a.StudentId == req.StudentId && a.TabType == "기자재"))
-                            _approvals.Add(req);
-                    }
-                }
                 GridEquipmentApprovals.ItemsSource = _approvals.Where(a => a.TabType == "기자재").ToList();
-
-                GridRentals.ItemsSource = null;
-                GridRentals.ItemsSource = _rentals;
-
-                TxtAvailableEquipmentCount.Text = "24개";
+ 
+                BindEquipmentRentals();
+ 
+                TxtAvailableEquipmentCount.Text = $"{24 - _rentals.Count}개";
                 TxtRentedEquipmentCount.Text = $"{_rentals.Count}개";
                 TxtEquipmentPendingCount.Text = $"{_approvals.Count(a => a.TabType == "기자재")}건";
             }
@@ -303,9 +261,9 @@ namespace SeatManagerApp
                 
                 RenderCabinetGrid();
                 
-                // Set mock counts
-                TxtAvailableCabinetCount.Text = "43개";
-                TxtRentedCabinetCount.Text = "5개";
+                // Set counts
+                TxtAvailableCabinetCount.Text = $"{48 - _cabinetAllocations.Count}개";
+                TxtRentedCabinetCount.Text = $"{_cabinetAllocations.Count}개";
             }
             else if (tabGrid == TabSangsangLab)
             {
@@ -353,26 +311,32 @@ namespace SeatManagerApp
                 seats[21].IsPillar = true; // Spot where pillar is located instead of Seat 22
 
                 // Pre-populate students in specific seats using copies of master database
-                int studentIdx = 0;
-                // Specific seats mapped in screenshot
+                var regStudents = _masterStudents.Where(s => !s.Department.Contains("대학원")).ToList();
+                var gradStudents = _masterStudents.Where(s => s.Department.Contains("대학원")).ToList();
+
+                int regIdx = 0;
+                int gradIdx = 0;
+
                 int[] assignedSeatNumbers = {
-                    13, 14, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 34, 36, 37, 38,
-                    43, 44, 45, 46, 47, 48, 49, 50, 51, 52
+                    13, 14, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 34, 36, 37, 38
                 };
 
                 foreach (int seatNum in assignedSeatNumbers)
                 {
-                    if (studentIdx < _masterStudents.Count)
+                    if (regIdx < regStudents.Count)
                     {
-                        // Copy student (Deep copy) so deleting from dashboard won't affect master
                         var seat = seats[seatNum - 1];
-                        seat.Student = _masterStudents[studentIdx++].Clone();
-                        
-                        // Graduate student's seat is always fixed
-                        if (seat.Student != null && seat.Student.Department.Contains("대학원"))
-                        {
-                            seat.IsFixed = true;
-                        }
+                        seat.Student = regStudents[regIdx++].Clone();
+                    }
+                }
+
+                for (int seatNum = 43; seatNum <= 52; seatNum++)
+                {
+                    if (gradIdx < gradStudents.Count)
+                    {
+                        var seat = seats[seatNum - 1];
+                        seat.Student = gradStudents[gradIdx++].Clone();
+                        seat.IsFixed = true;
                     }
                 }
 
@@ -651,7 +615,6 @@ namespace SeatManagerApp
                 TxtModalEmail.Text = seat.Student.Email;
                 ItemsModalAttendance.ItemsSource = seat.Student.Attendance;
                 BtnEditStudentModal.Visibility = Visibility.Visible;
-                BtnEditStudentInfo.Visibility = Visibility.Visible;
             }
             else
             {
@@ -662,8 +625,7 @@ namespace SeatManagerApp
                 TxtModalAdvisor.Text = "";
                 TxtModalEmail.Text = "";
                 ItemsModalAttendance.ItemsSource = new List<AttendanceRecord>();
-                BtnEditStudentModal.Visibility = Visibility.Collapsed;
-                BtnEditStudentInfo.Visibility = Visibility.Collapsed;
+                BtnEditStudentModal.Visibility = Visibility.Visible;
             }
 
             SetModalEditMode(false);
@@ -685,7 +647,6 @@ namespace SeatManagerApp
                 TxtModalAdvisor.Background = Brushes.White; TxtModalAdvisor.BorderThickness = new Thickness(1);
                 TxtModalEmail.Background = Brushes.White; TxtModalEmail.BorderThickness = new Thickness(1);
                 BtnEditStudentModal.Content = "저장";
-                BtnEditStudentInfo.Content = "저장";
             }
             else
             {
@@ -694,7 +655,6 @@ namespace SeatManagerApp
                 TxtModalAdvisor.Background = Brushes.Transparent; TxtModalAdvisor.BorderThickness = new Thickness(0);
                 TxtModalEmail.Background = Brushes.Transparent; TxtModalEmail.BorderThickness = new Thickness(0);
                 BtnEditStudentModal.Content = "수정";
-                BtnEditStudentInfo.Content = "정보 수정";
             }
         }
 
@@ -771,7 +731,7 @@ namespace SeatManagerApp
             if (newStudents.Count > 0)
             {
                 // Only place new students randomly into empty seats (filling from back)
-                var emptySeats = _activeSeats.Where(s => s.Student == null && !s.IsPillar).OrderBy(s => s.SeatNumber).ToList();
+                var emptySeats = _activeSeats.Where(s => s.Student == null && !s.IsPillar && (s.SeatNumber < 43 || s.SeatNumber > 52)).OrderBy(s => s.SeatNumber).ToList();
                 if (emptySeats.Count < newStudents.Count)
                 {
                     MessageBox.Show("빈 좌석이 부족하여 추가 학생을 배치할 수 없습니다.", "알림", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -801,7 +761,7 @@ namespace SeatManagerApp
             }
 
             // Otherwise, shuffle all un-fixed, non-pillar, and non-graduate seats, filling from the back
-            var unFixedSeats = _activeSeats.Where(s => !s.IsFixed && !s.IsPillar && !IsGraduateSeat(s)).OrderBy(s => s.SeatNumber).ToList();
+            var unFixedSeats = _activeSeats.Where(s => !s.IsFixed && !s.IsPillar && !IsGraduateSeat(s) && (s.SeatNumber < 43 || s.SeatNumber > 52)).OrderBy(s => s.SeatNumber).ToList();
             if (unFixedSeats.Count <= 1)
             {
                 MessageBox.Show("고정되지 않은 좌석이 부족하여 배정할 수 없습니다.", "알림", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -1041,22 +1001,35 @@ namespace SeatManagerApp
                     }
                 }
 
-                // Re-populate from master database (copy, not reference)
-                int studentIdx = 0;
+                var regStudents = _masterStudents.Where(s => !s.Department.Contains("대학원")).ToList();
+                var gradStudents = _masterStudents.Where(s => s.Department.Contains("대학원")).ToList();
+
+                int regIdx = 0;
+                int gradIdx = 0;
+
                 int[] assignedSeatNumbers = {
-                    13, 14, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 34, 36, 37, 38,
-                    43, 44, 45, 46, 47, 48, 49, 50, 51, 52
+                    13, 14, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 34, 36, 37, 38
                 };
 
                 foreach (int seatNum in assignedSeatNumbers)
                 {
-                    if (studentIdx < _masterStudents.Count && seatNum <= 42)
+                    if (regIdx < regStudents.Count)
                     {
                         var seat = _activeSeats[seatNum - 1];
                         if (!seat.IsFixed || seat.Student == null)
                         {
-                            seat.Student = _masterStudents[studentIdx++].Clone();
+                            seat.Student = regStudents[regIdx++].Clone();
                         }
+                    }
+                }
+
+                for (int seatNum = 43; seatNum <= 52; seatNum++)
+                {
+                    if (gradIdx < gradStudents.Count)
+                    {
+                        var seat = _activeSeats[seatNum - 1];
+                        seat.Student = gradStudents[gradIdx++].Clone();
+                        seat.IsFixed = true;
                     }
                 }
 
@@ -1116,7 +1089,115 @@ namespace SeatManagerApp
         }
 
         private void BtnEditStudentModal_Click(object sender, RoutedEventArgs e) => HandleModalEditSave();
-        private void BtnEditStudentInfo_Click(object sender, RoutedEventArgs e) => HandleModalEditSave();
+
+        // ================= SEAT STUDENT SELECTOR HANDLERS =================
+        private void BtnSelectStudentForSeat_Click(object sender, RoutedEventArgs e)
+        {
+            TxtSearchStudentForSeat.Clear();
+            ListStudentsForSeat.ItemsSource = _masterStudents;
+            ModalStudentSelection.Visibility = Visibility.Visible;
+        }
+
+        private void BtnCloseStudentSelect_Click(object sender, RoutedEventArgs e)
+        {
+            ModalStudentSelection.Visibility = Visibility.Collapsed;
+        }
+
+        private void TxtSearchStudentForSeat_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                PerformSearchStudentForSeat();
+            }
+        }
+
+        private void BtnSearchStudentForSeat_Click(object sender, RoutedEventArgs e)
+        {
+            PerformSearchStudentForSeat();
+        }
+
+        private void PerformSearchStudentForSeat()
+        {
+            string query = TxtSearchStudentForSeat.Text.Trim().ToLower();
+            if (string.IsNullOrEmpty(query))
+            {
+                ListStudentsForSeat.ItemsSource = _masterStudents;
+            }
+            else
+            {
+                var filtered = _masterStudents.Where(s => s.Name.ToLower().Contains(query) || s.StudentId.Contains(query)).ToList();
+                ListStudentsForSeat.ItemsSource = filtered;
+            }
+        }
+
+        private void BtnConfirmStudentSelect_Click(object sender, RoutedEventArgs e)
+        {
+            if (ListStudentsForSeat.SelectedItem is StudentInfo selected)
+            {
+                TxtModalName.Text = selected.Name;
+                TxtModalId.Text = selected.StudentId;
+                TxtModalDept.Text = selected.Department;
+                TxtModalAdvisor.Text = selected.Advisor;
+                TxtModalEmail.Text = selected.Email;
+                ItemsModalAttendance.ItemsSource = selected.Attendance;
+
+                if (_currentEditingSeat != null)
+                {
+                    _currentEditingSeat.Student = selected.Clone();
+                    if (selected.Department.Contains("대학원"))
+                    {
+                        _currentEditingSeat.IsFixed = true;
+                    }
+                    RenderSeatGrid();
+                    UpdateAlertBadges();
+                }
+
+                ModalStudentSelection.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                MessageBox.Show("배정할 학생을 목록에서 선택해주세요.", "알림", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+
+        // ================= APPROVAL HISTORY MODAL HANDLERS =================
+        private void BtnCloseApprovalHistory_Click(object sender, RoutedEventArgs e)
+        {
+            ModalApprovalHistory.Visibility = Visibility.Collapsed;
+        }
+
+        private void BtnReAddApproval_Click(object sender, RoutedEventArgs e)
+        {
+            if (GridApprovalHistoryList.SelectedItem is ApprovalRequest req)
+            {
+                var result = MessageBox.Show($"정말 {req.StudentName} 학생의 신청을 대기목록으로 다시 추가하시겠습니까?", "대기목록 추가 확인", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                if (result == MessageBoxResult.Yes)
+                {
+                    _approvalHistory.Remove(req);
+                    req.Status = "승인 대기";
+                    _approvals.Add(req);
+
+                    // Refresh history grid and approvals grid
+                    GridApprovalHistoryList.ItemsSource = null;
+                    GridApprovalHistoryList.ItemsSource = _approvalHistory;
+
+                    SwitchTab(req.TabType == "상상Lab" ? BtnSangsangLab : BtnCabinet, req.TabType == "상상Lab" ? TabSangsangLab : TabCabinet, req.TabType == "상상Lab" ? "상상Lab 승인" : "캐비닛 현황");
+                    UpdateAlertBadges();
+                    ModalApprovalHistory.Visibility = Visibility.Collapsed;
+                    MessageBox.Show("대기목록에 다시 추가되었습니다.", "완료", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+            }
+            else
+            {
+                MessageBox.Show("대기목록에 추가할 내역을 먼저 선택해주세요.", "알림", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+
+        // ================= RENTAL HISTORY MODAL HANDLERS =================
+        private void BtnCloseRentalHistory_Click(object sender, RoutedEventArgs e)
+        {
+            ModalRentalHistory.Visibility = Visibility.Collapsed;
+        }
 
         // ================= EQUIPMENT TAB (RENTALS / STATUS LIGHTS) =================
         private void BtnReturnEquipment_Click(object sender, RoutedEventArgs e)
@@ -1133,23 +1214,16 @@ namespace SeatManagerApp
                     _rentalUndoStack.Push(rental);
 
                     UpdateAlertBadges();
+                    BindEquipmentRentals();
                 }
             }
         }
 
         private void BtnUndoReturn_Click(object sender, RoutedEventArgs e)
         {
-            if (_rentalUndoStack.Count > 0)
-            {
-                var popped = _rentalUndoStack.Pop();
-                popped.IsReturned = false;
-                _rentals.Add(popped);
-                UpdateAlertBadges();
-            }
-            else
-            {
-                MessageBox.Show("되돌릴 반납 내역이 없습니다.", "알림", MessageBoxButton.OK, MessageBoxImage.Information);
-            }
+            GridApprovalHistoryList.ItemsSource = null;
+            GridApprovalHistoryList.ItemsSource = _approvalHistory;
+            ModalApprovalHistory.Visibility = Visibility.Visible;
         }
 
         // ================= CABINET & SANGSANGLAB APPROVAL HANDLERS =================
@@ -1159,25 +1233,46 @@ namespace SeatManagerApp
             {
                 req.Status = "승인 완료";
                 _approvals.Remove(req);
+                _approvalHistory.Add(req);
 
-                // Add student to dashboard if they are approved
-                // Let's find an empty seat
-                var emptySeat = _activeSeats.FirstOrDefault(s => s.Student == null && !s.IsPillar);
-                if (emptySeat != null)
+                // Add student to dashboard if they are approved (Only SangsangLab)
+                if (req.TabType == "상상Lab")
                 {
-                    emptySeat.Student = new StudentInfo
+                    var emptySeat = _activeSeats.FirstOrDefault(s => s.Student == null && !s.IsPillar);
+                    if (emptySeat != null)
                     {
-                        StudentId = req.StudentId,
-                        Name = req.StudentName,
-                        Department = req.Department,
-                        Advisor = req.Advisor,
-                        Email = req.Email
-                    };
-                    emptySeat.Student.Attendance.Add(new AttendanceRecord { DateString = _currentSimulatedDate.ToString("yyyy-MM-dd"), Status = "출석" });
-                    
-                    if (emptySeat.Student.Department.Contains("대학원"))
+                        emptySeat.Student = new StudentInfo
+                        {
+                            StudentId = req.StudentId,
+                            Name = req.StudentName,
+                            Department = req.Department,
+                            Advisor = req.Advisor,
+                            Email = req.Email
+                        };
+                        emptySeat.Student.Attendance.Add(new AttendanceRecord { DateString = _currentSimulatedDate.ToString("yyyy-MM-dd"), Status = "출석" });
+                        
+                        if (emptySeat.Student.Department.Contains("대학원"))
+                        {
+                            emptySeat.IsFixed = true;
+                        }
+                    }
+
+                    // Add to Master Database if not present
+                    var master = _masterStudents.FirstOrDefault(m => m.StudentId == req.StudentId);
+                    if (master == null)
                     {
-                        emptySeat.IsFixed = true;
+                        var newStudent = new StudentInfo
+                        {
+                            StudentId = req.StudentId,
+                            Name = req.StudentName,
+                            Department = req.Department,
+                            Advisor = req.Advisor,
+                            Email = req.Email
+                        };
+                        newStudent.Attendance.Add(new AttendanceRecord { DateString = _currentSimulatedDate.ToString("yyyy-MM-dd"), Status = "출석" });
+                        _masterStudents.Add(newStudent);
+                        GridMasterStudents.ItemsSource = null;
+                        GridMasterStudents.ItemsSource = _masterStudents;
                     }
                 }
 
@@ -1199,8 +1294,31 @@ namespace SeatManagerApp
                     }
                 }
 
-                // Refresh tab binding
-                SwitchTab(req.TabType == "상상Lab" ? BtnSangsangLab : BtnCabinet, req.TabType == "상상Lab" ? TabSangsangLab : TabCabinet, req.TabType == "상상Lab" ? "상상Lab 승인" : "캐비닛 현황");
+                // If equipment request is approved, add to active rentals and rental history
+                if (req.TabType == "기자재")
+                {
+                    string equipType = new Random().Next(2) == 0 ? "VR 헤드셋 (Quest 2)" : "LG Gram 노트북";
+                    var rental = new RentalItem
+                    {
+                        StudentName = req.StudentName,
+                        EquipmentType = equipType,
+                        RentalDate = _currentSimulatedDate,
+                        RentalPeriodDays = 7,
+                        IsReturned = false
+                    };
+                    _rentals.Add(rental);
+                    _rentalHistory.Add(rental);
+                }
+
+                // Refresh tab binding without bug
+                if (req.TabType == "기자재")
+                {
+                    SwitchTab(BtnEquipment, TabEquipment, "기자재 현황");
+                }
+                else
+                {
+                    SwitchTab(req.TabType == "상상Lab" ? BtnSangsangLab : BtnCabinet, req.TabType == "상상Lab" ? TabSangsangLab : TabCabinet, req.TabType == "상상Lab" ? "상상Lab 승인" : "캐비닛 현황");
+                }
                 RenderSeatGrid();
             }
         }
@@ -1211,8 +1329,16 @@ namespace SeatManagerApp
             {
                 req.Status = "반려";
                 _approvals.Remove(req);
+                _approvalHistory.Add(req);
 
-                SwitchTab(req.TabType == "상상Lab" ? BtnSangsangLab : BtnCabinet, req.TabType == "상상Lab" ? TabSangsangLab : TabCabinet, req.TabType == "상상Lab" ? "상상Lab 승인" : "캐비닛 현황");
+                if (req.TabType == "기자재")
+                {
+                    SwitchTab(BtnEquipment, TabEquipment, "기자재 현황");
+                }
+                else
+                {
+                    SwitchTab(req.TabType == "상상Lab" ? BtnSangsangLab : BtnCabinet, req.TabType == "상상Lab" ? TabSangsangLab : TabCabinet, req.TabType == "상상Lab" ? "상상Lab 승인" : "캐비닛 현황");
+                }
             }
         }
 
@@ -1262,19 +1388,22 @@ namespace SeatManagerApp
                 _selectedMasterStudent.Advisor = TxtMasterAdvisor.Text;
                 _selectedMasterStudent.Email = TxtMasterEmail.Text;
 
-                // Sync with active seats
-                var seat = _activeSeats.FirstOrDefault(s => s.Student?.StudentId == oldId);
-                if (seat != null && seat.Student != null)
+                // Sync with active seats across all cache layouts
+                foreach (var layout in _seatLayoutCache.Values)
                 {
-                    seat.Student.StudentId = newId;
-                    seat.Student.Name = _selectedMasterStudent.Name;
-                    seat.Student.Department = _selectedMasterStudent.Department;
-                    seat.Student.Advisor = _selectedMasterStudent.Advisor;
-                    seat.Student.Email = _selectedMasterStudent.Email;
-                    
-                    if (seat.Student.Department.Contains("대학원"))
+                    var seat = layout.FirstOrDefault(s => s.Student?.StudentId == oldId);
+                    if (seat != null && seat.Student != null)
                     {
-                        seat.IsFixed = true;
+                        seat.Student.StudentId = newId;
+                        seat.Student.Name = _selectedMasterStudent.Name;
+                        seat.Student.Department = _selectedMasterStudent.Department;
+                        seat.Student.Advisor = _selectedMasterStudent.Advisor;
+                        seat.Student.Email = _selectedMasterStudent.Email;
+                        
+                        if (seat.Student.Department.Contains("대학원"))
+                        {
+                            seat.IsFixed = true;
+                        }
                     }
                 }
 
@@ -1316,39 +1445,154 @@ namespace SeatManagerApp
         {
             if (_selectedMasterStudent != null)
             {
-                _masterStudents.Remove(_selectedMasterStudent);
-                GridMasterStudents.ItemsSource = null;
-                GridMasterStudents.ItemsSource = _masterStudents;
-                PanelMasterEdit.IsEnabled = false;
-                MessageBox.Show("마스터 데이터가 삭제되었습니다. (기존 배치된 좌석 데이터는 유지됩니다.)", "완료", MessageBoxButton.OK, MessageBoxImage.Information);
+                var result = MessageBox.Show($"정말 {_selectedMasterStudent.Name} 학생을 마스터 데이터베이스에서 삭제하시겠습니까?", "삭제 확인", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                if (result == MessageBoxResult.Yes)
+                {
+                    _masterStudents.Remove(_selectedMasterStudent);
+                    GridMasterStudents.ItemsSource = null;
+                    GridMasterStudents.ItemsSource = _masterStudents;
+                    PanelMasterEdit.IsEnabled = false;
+                    MessageBox.Show("마스터 데이터가 삭제되었습니다. (기존 배치된 좌석 데이터는 유지됩니다.)", "완료", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
             }
         }
 
         // ================= SIMULATE GOOGLE FORM SUBMISSIONS =================
-        private void BtnSimulateFormSubmission_Click(object sender, RoutedEventArgs e)
+        private async void BtnSimulateFormSubmission_Click(object sender, RoutedEventArgs e)
         {
-            Random r = new Random();
-            string[] names = { "서강준", "윤아라", "이지훈", "박소담", "최현우" };
-            string[] depts = { "컴퓨터공학과", "정보보안학과", "디지털콘텐츠학과" };
-            string name = names[r.Next(names.Length)];
-            string id = "2026" + r.Next(1000, 9999).ToString();
-            string type = r.Next(2) == 0 ? "상상Lab" : "캐비닛";
+            ModalLoading.Visibility = Visibility.Visible;
+            await System.Threading.Tasks.Task.Delay(1500);
+            
+            string apiKey = TxtGoogleFormApiKey.Text.Trim();
+            
+            var fetchedRequests = new List<ApprovalRequest>();
+            bool apiAttempted = false;
 
-            var req = new ApprovalRequest
+            // Attempt fetching for SangsangLab
+            if (!string.IsNullOrWhiteSpace(TxtSangsangLabFormUrl.Text) && !string.IsNullOrWhiteSpace(apiKey))
             {
-                StudentName = name,
-                StudentId = id,
-                Department = depts[r.Next(depts.Length)],
-                Advisor = "김동욱 교수",
-                Email = $"{name}@dsu.ac.kr",
-                TabType = type,
-                Status = "승인 대기"
-            };
+                apiAttempted = true;
+                var list = await FetchGoogleSheetsDataAsync(TxtSangsangLabFormUrl.Text, apiKey, "상상Lab");
+                if (list != null && list.Count > 0) fetchedRequests.AddRange(list);
+            }
 
-            _approvals.Add(req);
-            UpdateAlertBadges();
+            // Attempt fetching for Cabinet
+            if (!string.IsNullOrWhiteSpace(TxtCabinetFormUrl.Text) && !string.IsNullOrWhiteSpace(apiKey))
+            {
+                apiAttempted = true;
+                var list = await FetchGoogleSheetsDataAsync(TxtCabinetFormUrl.Text, apiKey, "캐비닛");
+                if (list != null && list.Count > 0) fetchedRequests.AddRange(list);
+            }
 
-            MessageBox.Show($"[구글폼 신청 접수]\n이름: {name}\n학번: {id}\n신청구분: {type}\n\n알림 뱃지가 업데이트 되었습니다.", "구글폼 신청 도착", MessageBoxButton.OK, MessageBoxImage.Information);
+            // Attempt fetching for Equipment
+            if (!string.IsNullOrWhiteSpace(TxtEquipmentFormUrl.Text) && !string.IsNullOrWhiteSpace(apiKey))
+            {
+                apiAttempted = true;
+                var list = await FetchGoogleSheetsDataAsync(TxtEquipmentFormUrl.Text, apiKey, "기자재");
+                if (list != null && list.Count > 0) fetchedRequests.AddRange(list);
+            }
+
+            ModalLoading.Visibility = Visibility.Collapsed;
+
+            if (fetchedRequests.Count > 0)
+            {
+                int newCount = 0;
+                foreach (var req in fetchedRequests)
+                {
+                    // Add only if not already exists in approvals or history
+                    if (!_approvals.Any(a => a.StudentId == req.StudentId && a.TabType == req.TabType) &&
+                        !_approvalHistory.Any(h => h.StudentId == req.StudentId && h.TabType == req.TabType))
+                    {
+                        _approvals.Add(req);
+                        newCount++;
+                    }
+                }
+
+                UpdateAlertBadges();
+                MessageBox.Show($"[구글 스프레드시트 API 연동 완료]\n\n총 {newCount}건의 새로운 신청 내역이 연동되어 업데이트되었습니다.", "동기화 완료", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            else
+            {
+                if (apiAttempted)
+                {
+                    MessageBox.Show("구글 스프레드시트 API 연동을 시도했으나 가져올 수 있는 새로운 데이터가 없거나,\nAPI 키/URL/공유 권한 설정이 잘못되었습니다.", "동기화 실패 또는 데이터 없음", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+                else
+                {
+                    MessageBox.Show("구글 폼 연동 설정(URL 및 API 키)이 등록되지 않았습니다.\n설정 탭에서 먼저 연동을 구성해 주세요.", "알림", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+            }
+        }
+
+        private string ExtractSpreadsheetId(string url)
+        {
+            if (string.IsNullOrEmpty(url)) return string.Empty;
+            int dIndex = url.IndexOf("/d/");
+            if (dIndex == -1) return string.Empty;
+            string sub = url.Substring(dIndex + 3);
+            int slashIndex = sub.IndexOf("/");
+            if (slashIndex == -1) return sub;
+            return sub.Substring(0, slashIndex);
+        }
+
+        private async System.Threading.Tasks.Task<List<ApprovalRequest>> FetchGoogleSheetsDataAsync(string url, string apiKey, string tabType)
+        {
+            string sheetId = ExtractSpreadsheetId(url);
+            if (string.IsNullOrEmpty(sheetId) || string.IsNullOrEmpty(apiKey)) return null;
+
+            using (var client = new System.Net.Http.HttpClient())
+            {
+                try
+                {
+                    string range = "A2:G50";
+                    string apiUrl = $"https://sheets.googleapis.com/v4/spreadsheets/{sheetId}/values/{range}?key={apiKey}";
+                    
+                    var response = await client.GetAsync(apiUrl);
+                    if (!response.IsSuccessStatusCode) return null;
+
+                    string json = await response.Content.ReadAsStringAsync();
+                    var list = new List<ApprovalRequest>();
+
+                    using (var doc = System.Text.Json.JsonDocument.Parse(json))
+                    {
+                        if (doc.RootElement.TryGetProperty("values", out var valuesProp))
+                        {
+                            foreach (var row in valuesProp.EnumerateArray())
+                            {
+                                if (row.GetArrayLength() >= 3)
+                                {
+                                    string timestampStr = row[0].GetString() ?? "";
+                                    string id = row[1].GetString() ?? "";
+                                    string name = row[2].GetString() ?? "";
+                                    string dept = row.GetArrayLength() > 3 ? (row[3].GetString() ?? "") : "소프트웨어융합학과";
+                                    string advisor = row.GetArrayLength() > 4 ? (row[4].GetString() ?? "") : "김동욱 교수";
+                                    string email = row.GetArrayLength() > 5 ? (row[5].GetString() ?? "") : $"{name}@dsu.ac.kr";
+
+                                    DateTime reqDate = DateTime.Now;
+                                    DateTime.TryParse(timestampStr, out reqDate);
+
+                                    list.Add(new ApprovalRequest
+                                    {
+                                        StudentName = name,
+                                        StudentId = id,
+                                        Department = dept,
+                                        Advisor = advisor,
+                                        Email = email,
+                                        TabType = tabType,
+                                        RequestDate = reqDate,
+                                        Status = "승인 대기"
+                                    });
+                                }
+                            }
+                        }
+                    }
+                    return list;
+                }
+                catch
+                {
+                    return null;
+                }
+            }
         }
 
         // ================= NEW UI STUB EVENT HANDLERS & HELPERS =================
@@ -1467,40 +1711,40 @@ namespace SeatManagerApp
             };
             stack.Children.Add(numTxt);
 
-            string studentText = "학번 이름";
-            string periodText = "사용기간";
-
             if (_cabinetAllocations.ContainsKey(number))
             {
                 var alloc = _cabinetAllocations[number];
-                studentText = $"{alloc.Student.StudentId} {alloc.Student.Name}";
-                periodText = alloc.Period;
                 border.Background = new SolidColorBrush(Color.FromRgb(239, 246, 255));
+
+                TextBlock studentTxt = new TextBlock
+                {
+                    Text = $"{alloc.Student.StudentId} {alloc.Student.Name}",
+                    FontSize = 9,
+                    Foreground = new SolidColorBrush(Color.FromRgb(75, 85, 99)),
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    Margin = new Thickness(0, 2, 0, 0)
+                };
+                stack.Children.Add(studentTxt);
+
+                TextBlock periodTxt = new TextBlock
+                {
+                    Text = alloc.Period,
+                    FontSize = 8,
+                    Foreground = new SolidColorBrush(Color.FromRgb(156, 163, 175)),
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    Margin = new Thickness(0, 1, 0, 0)
+                };
+                stack.Children.Add(periodTxt);
+            }
+            else
+            {
+                numTxt.FontSize = 13;
+                numTxt.Foreground = new SolidColorBrush(Color.FromRgb(156, 163, 175));
             }
 
             border.Tag = number;
             border.Cursor = Cursors.Hand;
             border.MouseDown += CabinetCell_MouseDown;
-
-            TextBlock studentTxt = new TextBlock
-            {
-                Text = studentText,
-                FontSize = 9,
-                Foreground = new SolidColorBrush(Color.FromRgb(75, 85, 99)),
-                HorizontalAlignment = HorizontalAlignment.Center,
-                Margin = new Thickness(0, 2, 0, 0)
-            };
-            stack.Children.Add(studentTxt);
-
-            TextBlock periodTxt = new TextBlock
-            {
-                Text = periodText,
-                FontSize = 8,
-                Foreground = new SolidColorBrush(Color.FromRgb(156, 163, 175)),
-                HorizontalAlignment = HorizontalAlignment.Center,
-                Margin = new Thickness(0, 1, 0, 0)
-            };
-            stack.Children.Add(periodTxt);
 
             border.Child = stack;
             return border;
@@ -1510,21 +1754,99 @@ namespace SeatManagerApp
         {
             if (sender is Border border && border.Tag is int number)
             {
+                _currentEditingCabinetNum = number;
                 if (_cabinetAllocations.ContainsKey(number))
                 {
                     var alloc = _cabinetAllocations[number];
-                    MessageBox.Show($"[캐비닛 {number}번 상세 정보]\n\n" +
-                                    $"학생 이름: {alloc.Student.Name}\n" +
-                                    $"학번: {alloc.Student.StudentId}\n" +
-                                    $"소속: {alloc.Student.Department}\n" +
-                                    $"대여 기간: {alloc.Period}\n" +
-                                    $"상태: 사용 중", "캐비닛 정보", MessageBoxButton.OK, MessageBoxImage.Information);
+                    TxtCabinetModalTitle.Text = $"캐비닛 {number}번 상세 정보";
+                    TxtCabinetModalName.Text = alloc.Student.Name;
+                    TxtCabinetModalId.Text = alloc.Student.StudentId;
+                    TxtCabinetModalPeriod.Text = alloc.Period;
+                    
+                    SetCabinetModalEditMode(false);
+                    ModalCabinetDetails.Visibility = Visibility.Visible;
                 }
                 else
                 {
-                    MessageBox.Show($"[캐비닛 {number}번 상세 정보]\n\n상태: 사용 가능 (미배정)", "캐비닛 정보", MessageBoxButton.OK, MessageBoxImage.Information);
+                    var result = MessageBox.Show($"[캐비닛 {number}번] 사용 가능 (미배정) 상태입니다.\n이 캐비닛에 새로운 학생을 임의 배정하시겠습니까?", "캐비닛 배정", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                    if (result == MessageBoxResult.Yes)
+                    {
+                        TxtCabinetModalTitle.Text = $"캐비닛 {number}번 임의 배정";
+                        TxtCabinetModalName.Text = "";
+                        TxtCabinetModalId.Text = "";
+                        TxtCabinetModalPeriod.Text = $"{_currentSimulatedDate:yyyy.MM.dd}~{_currentSimulatedDate.AddMonths(1):yyyy.MM.dd}";
+                        
+                        SetCabinetModalEditMode(true);
+                        ModalCabinetDetails.Visibility = Visibility.Visible;
+                    }
                 }
             }
+        }
+
+        private void BtnCloseCabinetModal_Click(object sender, RoutedEventArgs e)
+        {
+            ModalCabinetDetails.Visibility = Visibility.Collapsed;
+        }
+
+        private void BtnEditCabinetInfo_Click(object sender, RoutedEventArgs e)
+        {
+            SetCabinetModalEditMode(!_isCabinetModalEditing);
+        }
+
+        private void SetCabinetModalEditMode(bool enable)
+        {
+            _isCabinetModalEditing = enable;
+            TxtCabinetModalName.IsReadOnly = !enable;
+            TxtCabinetModalId.IsReadOnly = !enable;
+            TxtCabinetModalPeriod.IsReadOnly = !enable;
+
+            if (enable)
+            {
+                TxtCabinetModalName.Background = Brushes.White; TxtCabinetModalName.BorderThickness = new Thickness(1);
+                TxtCabinetModalId.Background = Brushes.White; TxtCabinetModalId.BorderThickness = new Thickness(1);
+                TxtCabinetModalPeriod.Background = Brushes.White; TxtCabinetModalPeriod.BorderThickness = new Thickness(1);
+                BtnSaveCabinetModal.Visibility = Visibility.Visible;
+                BtnEditCabinetInfo.Content = "취소";
+            }
+            else
+            {
+                TxtCabinetModalName.Background = Brushes.Transparent; TxtCabinetModalName.BorderThickness = new Thickness(0);
+                TxtCabinetModalId.Background = Brushes.Transparent; TxtCabinetModalId.BorderThickness = new Thickness(0);
+                TxtCabinetModalPeriod.Background = Brushes.Transparent; TxtCabinetModalPeriod.BorderThickness = new Thickness(0);
+                BtnSaveCabinetModal.Visibility = Visibility.Collapsed;
+                BtnEditCabinetInfo.Content = "정보 수정";
+            }
+        }
+
+        private void BtnSaveCabinetModal_Click(object sender, RoutedEventArgs e)
+        {
+            if (_currentEditingCabinetNum == 0) return;
+
+            string name = TxtCabinetModalName.Text.Trim();
+            string id = TxtCabinetModalId.Text.Trim();
+            string period = TxtCabinetModalPeriod.Text.Trim();
+
+            if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(id) || string.IsNullOrEmpty(period))
+            {
+                MessageBox.Show("모든 항목을 입력해 주세요.", "경고", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var student = new StudentInfo
+            {
+                StudentId = id,
+                Name = name,
+                Department = "소프트웨어융합학과"
+            };
+
+            _cabinetAllocations[_currentEditingCabinetNum] = (student, period);
+            
+            RenderCabinetGrid();
+            UpdateAlertBadges();
+            SetCabinetModalEditMode(false);
+            ModalCabinetDetails.Visibility = Visibility.Collapsed;
+            
+            MessageBox.Show("캐비닛 정보가 저장되었습니다.", "저장 완료", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private void PerformStudentSearch()
@@ -1564,12 +1886,13 @@ namespace SeatManagerApp
 
         private void ComboResolution_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            if (!this.IsLoaded) return;
             if (ComboResolution == null) return;
             var selected = (ComboResolution.SelectedItem as ComboBoxItem)?.Content?.ToString();
-            if (selected == "기본 (1200 x 780)")
+            if (selected == "기본 (1600 x 900)")
             {
-                this.Width = 1200;
-                this.Height = 780;
+                this.Width = 1600;
+                this.Height = 900;
             }
             else if (selected == "소형 (1024 x 768)")
             {
@@ -1585,6 +1908,60 @@ namespace SeatManagerApp
             {
                 this.Width = 1920;
                 this.Height = 1080;
+            }
+            else if (selected == "기타 (1200 x 780)")
+            {
+                this.Width = 1200;
+                this.Height = 780;
+            }
+        }
+
+        private void BtnShowApprovalHistory_Click(object sender, RoutedEventArgs e)
+        {
+            GridApprovalHistoryList.ItemsSource = null;
+            GridApprovalHistoryList.ItemsSource = _approvalHistory;
+            ModalApprovalHistory.Visibility = Visibility.Visible;
+        }
+
+        private void BtnRentalHistory_Click(object sender, RoutedEventArgs e)
+        {
+            GridRentalHistoryList.ItemsSource = null;
+            GridRentalHistoryList.ItemsSource = _rentalHistory;
+            ModalRentalHistory.Visibility = Visibility.Visible;
+        }
+
+        private void BtnSaveGoogleFormSettings_Click(object sender, RoutedEventArgs e)
+        {
+            bool hasSangsang = !string.IsNullOrWhiteSpace(TxtSangsangLabFormUrl.Text);
+            bool hasCabinet = !string.IsNullOrWhiteSpace(TxtCabinetFormUrl.Text);
+            bool hasEquipment = !string.IsNullOrWhiteSpace(TxtEquipmentFormUrl.Text);
+            bool hasApiKey = !string.IsNullOrWhiteSpace(TxtGoogleFormApiKey.Text);
+
+            if (!hasSangsang && !hasCabinet && !hasEquipment)
+            {
+                MessageBox.Show("적어도 하나의 구글 폼 URL을 입력해야 합니다.", "경고", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            if (!hasApiKey)
+            {
+                MessageBox.Show("구글 폼 API 인증 키를 입력해 주세요.", "경고", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            MessageBox.Show("구글 폼 연동 설정이 성공적으로 저장 및 적용되었습니다!", "설정 저장 완료", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private void BindEquipmentRentals()
+        {
+            if (GridQuestRentals != null)
+            {
+                GridQuestRentals.ItemsSource = null;
+                GridQuestRentals.ItemsSource = _rentals.Where(r => r.EquipmentType.Contains("VR") || r.EquipmentType.Contains("Quest")).ToList();
+            }
+            if (GridLaptopRentals != null)
+            {
+                GridLaptopRentals.ItemsSource = null;
+                GridLaptopRentals.ItemsSource = _rentals.Where(r => !r.EquipmentType.Contains("VR") && !r.EquipmentType.Contains("Quest")).ToList();
             }
         }
     }

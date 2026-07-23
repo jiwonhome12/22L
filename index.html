@@ -274,6 +274,8 @@
             align-items: center;
             justify-content: space-between;
             margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 12px;
         }
 
         .panel-title {
@@ -288,6 +290,7 @@
         .filter-controls {
             display: flex;
             gap: 8px;
+            flex-wrap: wrap;
         }
 
         select, input, button.btn-secondary {
@@ -910,7 +913,7 @@
                                     <option value="2학기">2학기</option>
                                     <option value="겨울방학">겨울방학</option>
                                 </select>
-                                <button class="btn-refresh" onclick="loadSeats()" title="새로고침">🔄</button>
+                                <button class="btn-refresh" onclick="loadSeats()" title="새로고침" style="font-size: 16px; display: flex; align-items: center; justify-content: center; width: 35px; height: 35px; padding: 0;">↻</button>
                             </div>
                         </div>
 
@@ -1066,7 +1069,7 @@
                         <div class="panel-title">📊 학생 마스터 데이터베이스</div>
                         <div style="display: flex; gap: 8px;">
                             <input type="text" id="search-student" placeholder="이름 또는 학번 검색..." oninput="filterMasterStudents()" style="width: 250px;">
-                            <button class="btn-primary" onclick="syncDataFromForm()" title="구글폼 데이터 다시 불러오기">🔄 동기화</button>
+                            <button class="btn-primary" onclick="syncDataFromForm()" title="구글폼 데이터 다시 불러오기">↻ 동기화</button>
                         </div>
                     </div>
                     <div class="data-table-container">
@@ -1250,22 +1253,9 @@
             }))
         };
 
-        let activeRentals = [
-            { id: 1, studentName: "임진섭", equipmentType: "VR 헤드셋 Oculus Quest 2", rentalDate: "2026-07-10", dueDate: "2026-07-17", isReturned: false, isOverdue: true },
-            { id: 2, studentName: "김지원", equipmentType: "iPad Pro 12.9 + Apple Pencil", rentalDate: "2026-07-12", dueDate: "2026-07-19", isReturned: false, isOverdue: true },
-            { id: 3, studentName: "송유진", equipmentType: "Arduino IoT Starter Kit", rentalDate: "2026-07-18", dueDate: "2026-07-25", isReturned: false, isOverdue: false },
-            { id: 4, studentName: "문현수", equipmentType: "Raspberry Pi 4 Model B", rentalDate: "2026-07-19", dueDate: "2026-07-26", isReturned: false, isOverdue: false }
-        ];
+        let activeRentals = [];
 
-        let approvals = [
-            { id: 1, studentName: "홍길동", studentId: "20231102", department: "컴퓨터공학과", advisor: "김동욱 교수", tabType: "상상Lab", status: "승인 대기" },
-            { id: 2, studentName: "이영희", studentId: "20220456", department: "정보보안학과", advisor: "이지현 교수", tabType: "상상Lab", status: "승인 대기" },
-            { id: 3, studentName: "박철수", studentId: "20240911", department: "게임공학과", advisor: "최준호 교수", tabType: "상상Lab", status: "승인 대기" },
-            { id: 4, studentName: "최영선", studentId: "20210872", department: "소프트웨어융합학과", advisor: "박상우 교수", tabType: "상상Lab", status: "승인 대기" },
-            { id: 5, studentName: "강민호", studentId: "20251142", department: "컴퓨터공학과", advisor: "김동욱 교수", tabType: "캐비닛", status: "승인 대기" },
-            { id: 6, studentName: "윤하은", studentId: "20231509", department: "정보보안학과", advisor: "이지현 교수", tabType: "캐비닛", status: "승인 대기" },
-            { id: 7, studentName: "정승우", studentId: "20221199", department: "게임공학과", advisor: "최준호 교수", tabType: "캐비닛", status: "승인 대기" }
-        ];
+        let approvals = [];
 
         let memos = [
             { id: 1, content: "3층 강의실 컴퓨터 포멧" },

@@ -71,6 +71,7 @@ namespace SeatManagerApp
         public DateTime DueDate => RentalDate.AddDays(RentalPeriodDays);
         public bool IsReturned { get; set; } = false;
         public bool IsOverdue => DueDate < new DateTime(2026, 7, 16);
+        public string StatusDisplay => IsReturned ? "반납 완료" : (IsOverdue ? "연체됨" : "대여중");
     }
 
     public class ApprovalRequest

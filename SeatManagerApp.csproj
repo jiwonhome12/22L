@@ -9,5 +9,9 @@
     <DefaultItemExcludes>$(DefaultItemExcludes);SpinnerApp\**;Spinner.cs</DefaultItemExcludes>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="MiniExcel" Version="1.45.0" />
+  </ItemGroup>
+
 </Project>
  

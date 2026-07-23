@@ -1,7 +1,7 @@
 <Window x:Class="SeatManagerApp.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="동서대학교 좌석 및 기자재 관리 시스템" Height="780" Width="1200"
+        Title="동서대학교 좌석 및 기자재 관리 시스템" Height="900" Width="1600"
         WindowStartupLocation="CenterScreen" Background="#F3F4F6"
         MinHeight="720" MinWidth="1100">
 
@@ -155,7 +155,7 @@
                     <!-- Alert / Status Badges (Only relevant for Dashboard) -->
                     <StackPanel x:Name="HeaderAlertArea" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="30,0,0,0">
                         <!-- SangsangLab Approval Alert Card -->
-                        <Border Background="#FEE2E2" BorderBrush="#FCA5A5" BorderThickness="1" CornerRadius="8" Padding="12,6" Margin="0,0,12,0" Cursor="Hand" MouseDown="AlertSangsangLab_MouseDown">
+                        <Border x:Name="CardSangsangLabAlert" Background="#FEE2E2" BorderBrush="#FCA5A5" BorderThickness="1" CornerRadius="8" Padding="12,6" Margin="0,0,12,0" Cursor="Hand" MouseDown="AlertSangsangLab_MouseDown">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <TextBlock Text="💡" FontSize="18" Foreground="#DC2626" VerticalAlignment="Center" Margin="0,0,8,0"/>
                                 <StackPanel>
@@ -167,25 +167,25 @@
                         </Border>
 
                         <!-- Cabinet Approval Alert Card -->
-                        <Border Background="#FFEDD5" BorderBrush="#FED7AA" BorderThickness="1" CornerRadius="8" Padding="12,6" Margin="0,0,12,0" Cursor="Hand" MouseDown="AlertCabinet_MouseDown">
+                        <Border x:Name="CardCabinetAlert" Background="#FFEDD5" BorderBrush="#FED7AA" BorderThickness="1" CornerRadius="8" Padding="12,6" Margin="0,0,12,0" Cursor="Hand" MouseDown="AlertCabinet_MouseDown">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <TextBlock Text="🗄️" FontSize="18" Foreground="#EA580C" VerticalAlignment="Center" Margin="0,0,8,0"/>
                                 <StackPanel>
-                                    <TextBlock Text="캐비닛" FontSize="10" Foreground="#9A3412" FontWeight="Bold"/>
+                                    <TextBlock Text="캐비닛 승인 대기" FontSize="10" Foreground="#9A3412" FontWeight="Bold"/>
                                     <TextBlock x:Name="TxtCabinetCount" Text="0건" FontSize="12" Foreground="#EA580C" FontWeight="Bold"/>
                                     <TextBlock Text="승인 필요" FontSize="9" Foreground="#9A3412"/>
                                 </StackPanel>
                             </StackPanel>
                         </Border>
 
-                        <!-- Equipment Return Alert Card -->
-                        <Border Background="#FEE2E2" BorderBrush="#FCA5A5" BorderThickness="1" CornerRadius="8" Padding="12,6" Cursor="Hand" MouseDown="AlertEquipment_MouseDown">
+                        <!-- Equipment Approval Alert Card -->
+                        <Border x:Name="CardEquipmentAlert" Background="#FEE2E2" BorderBrush="#FCA5A5" BorderThickness="1" CornerRadius="8" Padding="12,6" Cursor="Hand" MouseDown="AlertEquipment_MouseDown">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <TextBlock Text="🔧" FontSize="18" Foreground="#DC2626" VerticalAlignment="Center" Margin="0,0,8,0"/>
                                 <StackPanel>
-                                    <TextBlock Text="기자재" FontSize="10" Foreground="#991B1B" FontWeight="Bold"/>
+                                    <TextBlock Text="기자재 승인 대기" FontSize="10" Foreground="#991B1B" FontWeight="Bold"/>
                                     <TextBlock x:Name="TxtEquipmentCount" Text="0건" FontSize="12" Foreground="#DC2626" FontWeight="Bold"/>
-                                    <TextBlock Text="반납 필요" FontSize="9" Foreground="#991B1B"/>
+                                    <TextBlock Text="승인 필요" FontSize="9" Foreground="#991B1B"/>
                                 </StackPanel>
                             </StackPanel>
                         </Border>
@@ -228,14 +228,9 @@
                         </Grid.RowDefinitions>
 
                         <!-- Control & Filter Bar -->
-                        <Grid Grid.Row="0" Margin="0,0,0,15">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-
+                        <WrapPanel Grid.Row="0" Margin="0,0,0,15" VerticalAlignment="Center">
                             <!-- Year/Semester Search Panel -->
-                            <Border Grid.Column="0" Background="#1F2937" CornerRadius="6" Padding="15,10" VerticalAlignment="Center" Margin="0,0,15,0">
+                            <Border Background="#1F2937" CornerRadius="6" Padding="15,10" VerticalAlignment="Center" Margin="0,0,15,8">
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                     <TextBlock Text="년도" Foreground="White" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,8,0"/>
                                     <ComboBox x:Name="ComboSearchYear" Width="100" Padding="5" SelectedIndex="0"/>
@@ -260,8 +255,8 @@
                             </Border>
 
                             <!-- Action Buttons -->
-                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                <Button x:Name="BtnRefresh" Content="🔄" Width="35" Height="35" Style="{StaticResource ActionBarBtn}" Margin="0,0,8,0" Click="BtnRefresh_Click"/>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,0,8">
+                                <Button x:Name="BtnRefresh" FontFamily="Segoe MDL2 Assets" Content="&#xE72C;" Width="35" Height="35" Style="{StaticResource ActionBarBtn}" Margin="0,0,8,0" Click="BtnRefresh_Click"/>
                                 <Button x:Name="BtnSyncData" Content="데이터 동기화" Style="{StaticResource ActionBarBtn}" Margin="0,0,8,0" Click="BtnSyncData_Click"/>
                                 <Button Content="랜덤 배정" Style="{StaticResource ActionBarBtn}" Margin="0,0,8,0" Click="BtnRandomAllocation_Click"/>
                                 <Button x:Name="BtnSeatFixMode" Content="좌석 고정 모드" Style="{StaticResource ActionBarBtn}" Margin="0,0,8,0" Click="BtnSeatFixMode_Click"/>
@@ -274,7 +269,7 @@
                                     </Button.Resources>
                                 </Button>
                             </StackPanel>
-                        </Grid>
+                        </WrapPanel>
 
                         <!-- Grid of Seats -->
                         <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
@@ -377,7 +372,7 @@
 
                         <!-- Action Buttons -->
                         <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                            <Button x:Name="BtnUndoReturn" Content="↩️ 되돌리기" Style="{StaticResource ActionBarBtn}" Margin="0,0,8,0" Click="BtnUndoReturn_Click"/>
+                            <Button x:Name="BtnRentalHistory" Content="📋 대여/반납 내역" Style="{StaticResource ActionBarBtn}" Margin="0,0,8,0" Click="BtnRentalHistory_Click"/>
                             <Button x:Name="BtnEquipmentDelete" Content="기자재 데이터 삭제" Style="{StaticResource ActionBarBtn}" Margin="0,0,8,0" Click="BtnEquipmentDelete_Click"/>
                             <Button x:Name="BtnEquipmentFix" Content="기자재 데이터 고정" Style="{StaticResource ActionBarBtn}" Margin="0,0,8,0" Click="BtnEquipmentFix_Click"/>
                             <Button x:Name="BtnEquipmentExport" Content="기자재 데이터 추출" Style="{StaticResource ActionBarBtn}" Click="BtnEquipmentExport_Click"/>
@@ -443,52 +438,120 @@
                         </StackPanel>
                     </Grid>
 
-                    <!-- Section 2 DataGrid -->
-                    <Border Grid.Row="6" Background="White" BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="8" Padding="10">
-                        <DataGrid x:Name="GridRentals" AutoGenerateColumns="False" CanUserAddRows="False" 
-                                  HeadersVisibility="Column" GridLinesVisibility="Horizontal" RowHeight="40"
-                                  BorderThickness="0" Background="Transparent" AlternatingRowBackground="#F9FAFB">
-                            <DataGrid.Columns>
-                                <DataGridTemplateColumn Header="상태" Width="80">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <Ellipse Width="14" Height="14" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                                <Ellipse.Style>
-                                                    <Style TargetType="Ellipse">
-                                                        <Setter Property="Fill" Value="#10B981"/>
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding IsOverdue}" Value="True">
-                                                                <Setter Property="Fill" Value="#EF4444"/>
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </Ellipse.Style>
-                                            </Ellipse>
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
-                                <DataGridTextColumn Header="대여자 이름" Binding="{Binding StudentName}" Width="150" IsReadOnly="True"/>
-                                <DataGridTextColumn Header="대여 기자재 종류" Binding="{Binding EquipmentType}" Width="250" IsReadOnly="True"/>
-                                <DataGridTextColumn Header="대여 일자" Binding="{Binding RentalDate, StringFormat=\{0:yyyy-MM-dd\}}" Width="150" IsReadOnly="True"/>
-                                <DataGridTextColumn Header="반납 기한" Binding="{Binding DueDate, StringFormat=\{0:yyyy-MM-dd\}}" Width="150" IsReadOnly="True"/>
-                                <DataGridTemplateColumn Header="작업" Width="*">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <Button Content="반납완료" Background="#EF4444" Foreground="White" BorderThickness="0" 
-                                                    Padding="12,4" FontWeight="Bold" HorizontalAlignment="Left" Cursor="Hand"
-                                                    Click="BtnReturnEquipment_Click" CommandParameter="{Binding}">
-                                                <Button.Resources>
-                                                    <Style TargetType="Border">
-                                                        <Setter Property="CornerRadius" Value="4"/>
-                                                    </Style>
-                                                </Button.Resources>
-                                            </Button>
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
-                            </DataGrid.Columns>
-                        </DataGrid>
-                    </Border>
+                    <!-- Section 2 Split DataGrids -->
+                    <Grid Grid.Row="6">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="20"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <!-- Left Column: VR Headset Rentals -->
+                        <Grid Grid.Column="0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="0" Text="🕶️ VR 헤드셋 대여 현황" FontSize="14" FontWeight="Bold" Foreground="#374151" Margin="0,0,0,8"/>
+                            <Border Grid.Row="1" Background="White" BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="8" Padding="10">
+                                <DataGrid x:Name="GridQuestRentals" AutoGenerateColumns="False" CanUserAddRows="False" 
+                                          HeadersVisibility="Column" GridLinesVisibility="Horizontal" RowHeight="40"
+                                          BorderThickness="0" Background="Transparent" AlternatingRowBackground="#F9FAFB">
+                                    <DataGrid.Columns>
+                                        <DataGridTemplateColumn Header="상태" Width="60">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Ellipse Width="12" Height="12" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                        <Ellipse.Style>
+                                                            <Style TargetType="Ellipse">
+                                                                <Setter Property="Fill" Value="#10B981"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding IsOverdue}" Value="True">
+                                                                        <Setter Property="Fill" Value="#EF4444"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Ellipse.Style>
+                                                    </Ellipse>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                        <DataGridTextColumn Header="대여자" Binding="{Binding StudentName}" Width="80" IsReadOnly="True"/>
+                                        <DataGridTextColumn Header="기자재 종류" Binding="{Binding EquipmentType}" Width="110" IsReadOnly="True"/>
+                                        <DataGridTextColumn Header="반납 기한" Binding="{Binding DueDate, StringFormat=\{0:yyyy-MM-dd\}}" Width="100" IsReadOnly="True"/>
+                                        <DataGridTemplateColumn Header="작업" Width="*">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Button Content="반납" Background="#EF4444" Foreground="White" BorderThickness="0" 
+                                                            Padding="8,2" FontSize="11" FontWeight="Bold" HorizontalAlignment="Center" Cursor="Hand"
+                                                            Click="BtnReturnEquipment_Click" CommandParameter="{Binding}">
+                                                        <Button.Resources>
+                                                            <Style TargetType="Border">
+                                                                <Setter Property="CornerRadius" Value="4"/>
+                                                            </Style>
+                                                        </Button.Resources>
+                                                    </Button>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </Border>
+                        </Grid>
+                        
+                        <!-- Right Column: Laptop Rentals -->
+                        <Grid Grid.Column="2">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="0" Text="💻 노트북 대여 현황" FontSize="14" FontWeight="Bold" Foreground="#374151" Margin="0,0,0,8"/>
+                            <Border Grid.Row="1" Background="White" BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="8" Padding="10">
+                                <DataGrid x:Name="GridLaptopRentals" AutoGenerateColumns="False" CanUserAddRows="False" 
+                                          HeadersVisibility="Column" GridLinesVisibility="Horizontal" RowHeight="40"
+                                          BorderThickness="0" Background="Transparent" AlternatingRowBackground="#F9FAFB">
+                                    <DataGrid.Columns>
+                                        <DataGridTemplateColumn Header="상태" Width="60">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Ellipse Width="12" Height="12" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                        <Ellipse.Style>
+                                                            <Style TargetType="Ellipse">
+                                                                <Setter Property="Fill" Value="#10B981"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding IsOverdue}" Value="True">
+                                                                        <Setter Property="Fill" Value="#EF4444"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Ellipse.Style>
+                                                    </Ellipse>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                        <DataGridTextColumn Header="대여자" Binding="{Binding StudentName}" Width="80" IsReadOnly="True"/>
+                                        <DataGridTextColumn Header="기자재 종류" Binding="{Binding EquipmentType}" Width="110" IsReadOnly="True"/>
+                                        <DataGridTextColumn Header="반납 기한" Binding="{Binding DueDate, StringFormat=\{0:yyyy-MM-dd\}}" Width="100" IsReadOnly="True"/>
+                                        <DataGridTemplateColumn Header="작업" Width="*">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Button Content="반납" Background="#EF4444" Foreground="White" BorderThickness="0" 
+                                                            Padding="8,2" FontSize="11" FontWeight="Bold" HorizontalAlignment="Center" Cursor="Hand"
+                                                            Click="BtnReturnEquipment_Click" CommandParameter="{Binding}">
+                                                        <Button.Resources>
+                                                            <Style TargetType="Border">
+                                                                <Setter Property="CornerRadius" Value="4"/>
+                                                            </Style>
+                                                        </Button.Resources>
+                                                    </Button>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </Border>
+                        </Grid>
+                    </Grid>
                 </Grid>
 
                 <!-- ================= TAB 3: CABINET STATUS ================= -->
@@ -531,6 +594,7 @@
 
                         <!-- Action Buttons -->
                         <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                            <Button x:Name="BtnShowApprovalHistory" Content="📋 승인/반려 내역" Style="{StaticResource ActionBarBtn}" Margin="0,0,8,0" Click="BtnShowApprovalHistory_Click"/>
                             <Button x:Name="BtnCabinetDelete" Content="캐비닛 데이터 삭제" Style="{StaticResource ActionBarBtn}" Margin="0,0,8,0" Click="BtnCabinetDelete_Click"/>
                             <Button x:Name="BtnCabinetFix" Content="캐비닛 데이터 고정" Style="{StaticResource ActionBarBtn}" Margin="0,0,8,0" Click="BtnCabinetFix_Click"/>
                             <Button x:Name="BtnCabinetExport" Content="캐비닛 데이터 추출" Style="{StaticResource ActionBarBtn}" Click="BtnCabinetExport_Click"/>
@@ -743,7 +807,12 @@
                             <TextBlock Text="검색어 (학번/이름/지도교수): " FontSize="13" FontWeight="SemiBold" Foreground="#374151" VerticalAlignment="Center" Margin="0,0,8,0"/>
                             <TextBox x:Name="TxtSearchStudent" Width="200" Padding="5" VerticalContentAlignment="Center" KeyUp="TxtSearchStudent_KeyUp" Margin="0,0,10,0"/>
                             <Button Content="🔍 검색" Style="{StaticResource ActionBarBtn}" Padding="15,6" Click="BtnSearchStudent_Click" Margin="0,0,5,0"/>
-                            <Button Content="🔄 전체보기" Style="{StaticResource ActionBarBtn}" Padding="15,6" Click="BtnClearStudentSearch_Click"/>
+                            <Button Style="{StaticResource ActionBarBtn}" Padding="15,6" Click="BtnClearStudentSearch_Click">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE72C;" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="전체보기" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
                         </StackPanel>
                     </Border>
 
@@ -807,19 +876,32 @@
                                 <TextBlock Text="플랫폼: .NET 10.0 WPF Application" Margin="0,0,0,15"/>
 
                                 <TextBlock Text="구글 폼 연동 설정" FontSize="14" FontWeight="Bold" Foreground="#374151" Margin="0,15,0,10"/>
-                                <TextBlock Text="구글 폼 URL" FontSize="11" Foreground="#6B7280" Margin="0,0,0,4"/>
-                                <TextBox x:Name="TxtGoogleFormUrl" Height="35" BorderBrush="#D1D5DB" BorderThickness="1" Padding="10" Margin="0,0,0,15" VerticalAlignment="Center"/>
+                                
+                                <TextBlock Text="상상Lab 신청 구글 폼 URL" FontSize="11" Foreground="#6B7280" Margin="0,0,0,4"/>
+                                <TextBox x:Name="TxtSangsangLabFormUrl" Height="30" BorderBrush="#D1D5DB" BorderThickness="1" Padding="5" Margin="0,0,0,10" VerticalAlignment="Center"/>
+                                
+                                <TextBlock Text="캐비닛 신청 구글 폼 URL" FontSize="11" Foreground="#6B7280" Margin="0,0,0,4"/>
+                                <TextBox x:Name="TxtCabinetFormUrl" Height="30" BorderBrush="#D1D5DB" BorderThickness="1" Padding="5" Margin="0,0,0,10" VerticalAlignment="Center"/>
+                                
+                                <TextBlock Text="기자재 신청 구글 폼 URL" FontSize="11" Foreground="#6B7280" Margin="0,0,0,4"/>
+                                <TextBox x:Name="TxtEquipmentFormUrl" Height="30" BorderBrush="#D1D5DB" BorderThickness="1" Padding="5" Margin="0,0,0,10" VerticalAlignment="Center"/>
+                                
+                                <TextBlock Text="구글 폼 API 인증 키 (API Key)" FontSize="11" Foreground="#6B7280" Margin="0,0,0,4"/>
+                                <TextBox x:Name="TxtGoogleFormApiKey" Height="30" BorderBrush="#D1D5DB" BorderThickness="1" Padding="5" Margin="0,0,0,10" VerticalAlignment="Center"/>
+                                
+                                <Button x:Name="BtnSaveGoogleFormSettings" Content="💾 구글 폼 연동 설정 저장" HorizontalAlignment="Left" Padding="15,8" Style="{StaticResource ActionBarBtn}" Click="BtnSaveGoogleFormSettings_Click" Margin="0,0,0,20"/>
 
                                 <TextBlock Text="화면 해상도 설정" FontSize="14" FontWeight="Bold" Foreground="#374151" Margin="0,10,0,10"/>
                                 <ComboBox x:Name="ComboResolution" Width="200" Padding="5" HorizontalAlignment="Left" Margin="0,0,0,15" SelectedIndex="0" SelectionChanged="ComboResolution_SelectionChanged">
-                                    <ComboBoxItem Content="기본 (1200 x 780)"/>
+                                    <ComboBoxItem Content="기본 (1600 x 900)"/>
                                     <ComboBoxItem Content="소형 (1024 x 768)"/>
                                     <ComboBoxItem Content="중형 (1440 x 900)"/>
                                     <ComboBoxItem Content="대형 (1920 x 1080)"/>
+                                    <ComboBoxItem Content="기타 (1200 x 780)"/>
                                 </ComboBox>
 
-                                <TextBlock Text="구글 폼 데이터 동기화 시뮬레이터" FontSize="14" FontWeight="Bold" Foreground="#374151" Margin="0,10,0,10"/>
-                                <Button Content="📥 새로운 구글폼 신청 데이터 수신 (시뮬레이션)" HorizontalAlignment="Left" Padding="15,8" Style="{StaticResource ActionBarBtn}" Click="BtnSimulateFormSubmission_Click"/>
+                                <TextBlock Text="구글 폼 데이터 동기화" FontSize="14" FontWeight="Bold" Foreground="#374151" Margin="0,10,0,10"/>
+                                <Button Content="📥 구글 폼 데이터 동기화" HorizontalAlignment="Left" Padding="15,8" Style="{StaticResource ActionBarBtn}" Click="BtnSimulateFormSubmission_Click"/>
                             </StackPanel>
                         </Border>
                     </StackPanel>
@@ -843,15 +925,15 @@
                     <TextBlock x:Name="TxtModalSeatNum" Visibility="Collapsed"/>
                     <ItemsControl x:Name="ItemsModalAttendance" Visibility="Collapsed"/>
 
-                    <!-- Close button in top-right, Info edit button nearby -->
+                    <!-- Close button in top-right, Select Student button nearby -->
                     <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top" Panel.ZIndex="10" Margin="0,-15,0,0">
-                        <Button x:Name="BtnEditStudentInfo" Content="정보 수정" Background="#F3F4F6" Foreground="#374151" BorderThickness="0" Padding="15,6" FontSize="12" FontWeight="SemiBold" Cursor="Hand" Click="BtnEditStudentInfo_Click" Margin="0,0,15,0">
+                        <Button x:Name="BtnSelectStudentForSeat" Content="학생 선택" Background="#2563EB" Foreground="White" BorderThickness="0" Padding="15,6" FontSize="12" FontWeight="SemiBold" Cursor="Hand" Click="BtnSelectStudentForSeat_Click" Margin="0,0,15,0">
                             <Button.Resources>
                                 <Style TargetType="Border"><Setter Property="CornerRadius" Value="6"/></Style>
                             </Button.Resources>
                         </Button>
                         <Button x:Name="BtnCloseModal" Background="Transparent" BorderThickness="0" Cursor="Hand" Click="BtnCloseModal_Click" Padding="5">
-                            <TextBlock Text="🚪" FontSize="24" Foreground="#111827"/>
+                            <TextBlock Text="✕" FontSize="20" Foreground="#111827"/>
                         </Button>
                     </StackPanel>
 
@@ -1014,7 +1096,7 @@
                                 </Style>
                             </Button.Resources>
                         </Button>
-                        <Button Content="확인" Background="#2563EB" Foreground="White" BorderThickness="0" Padding="20,8" FontWeight="Bold" Cursor="Hand" Click="BtnCloseModal_Click">
+                        <Button x:Name="BtnCancelModal" Content="취소" Background="#6B7280" Foreground="White" BorderThickness="0" Padding="20,8" FontWeight="Bold" Cursor="Hand" Click="BtnCloseModal_Click">
                             <Button.Resources>
                                 <Style TargetType="Border">
                                     <Setter Property="CornerRadius" Value="4"/>
@@ -1023,6 +1105,233 @@
                         </Button>
                     </StackPanel>
                 </Grid>
+            </Border>
+        </Grid>
+        
+        <!-- ================= STUDENT SELECTION MODAL ================= -->
+        <Grid x:Name="ModalStudentSelection" Grid.ColumnSpan="2" Background="#90000000" Visibility="Collapsed" Panel.ZIndex="100">
+            <Border Background="White" Width="500" Height="600" CornerRadius="12" Padding="25" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    
+                    <!-- Header -->
+                    <Grid Grid.Row="0" Margin="0,0,0,15">
+                        <TextBlock Text="배정할 학생 선택" FontSize="16" FontWeight="Bold" Foreground="#111827"/>
+                        <Button Content="✕" FontSize="16" FontWeight="Bold" Background="Transparent" BorderThickness="0" Cursor="Hand" HorizontalAlignment="Right" Click="BtnCloseStudentSelect_Click"/>
+                    </Grid>
+                    
+                    <!-- Search Box -->
+                    <Grid Grid.Row="1" Margin="0,0,0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox x:Name="TxtSearchStudentForSeat" Padding="5" KeyUp="TxtSearchStudentForSeat_KeyUp" VerticalContentAlignment="Center"/>
+                        <Button Grid.Column="1" Content="🔍 검색" Width="60" Margin="5,0,0,0" Padding="5" Click="BtnSearchStudentForSeat_Click" Style="{StaticResource ActionBarBtn}"/>
+                    </Grid>
+                    
+                    <!-- Student List -->
+                    <ListBox Grid.Row="2" x:Name="ListStudentsForSeat" SelectionMode="Single" Margin="0,0,0,15">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" Margin="5">
+                                    <TextBlock Text="{Binding Name}" FontWeight="Bold" Width="80"/>
+                                    <TextBlock Text="{Binding StudentId}" Foreground="#6B7280" Width="100" Margin="10,0,0,0"/>
+                                    <TextBlock Text="{Binding Department}" Foreground="#4B5563" Width="200" Margin="10,0,0,0"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    
+                    <!-- Footer Buttons -->
+                    <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Content="취소" Background="#F3F4F6" Foreground="#374151" BorderThickness="0" Padding="15,8" Margin="0,0,8,0" FontWeight="Bold" Cursor="Hand" Click="BtnCloseStudentSelect_Click">
+                            <Button.Resources>
+                                <Style TargetType="Border"><Setter Property="CornerRadius" Value="4"/></Style>
+                            </Button.Resources>
+                        </Button>
+                        <Button Content="배정 완료" Background="#2563EB" Foreground="White" BorderThickness="0" Padding="15,8" FontWeight="Bold" Cursor="Hand" Click="BtnConfirmStudentSelect_Click">
+                            <Button.Resources>
+                                <Style TargetType="Border"><Setter Property="CornerRadius" Value="4"/></Style>
+                            </Button.Resources>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- ================= APPROVAL HISTORY MODAL ================= -->
+        <Grid x:Name="ModalApprovalHistory" Grid.ColumnSpan="2" Background="#90000000" Visibility="Collapsed" Panel.ZIndex="100">
+            <Border Background="White" Width="650" Height="600" CornerRadius="12" Padding="25" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    
+                    <!-- Header -->
+                    <Grid Grid.Row="0" Margin="0,0,0,15">
+                        <TextBlock Text="승인 및 반려 내역" FontSize="16" FontWeight="Bold" Foreground="#111827"/>
+                        <Button Content="✕" FontSize="16" FontWeight="Bold" Background="Transparent" BorderThickness="0" Cursor="Hand" HorizontalAlignment="Right" Click="BtnCloseApprovalHistory_Click"/>
+                    </Grid>
+                    
+                    <!-- List -->
+                    <DataGrid Grid.Row="1" x:Name="GridApprovalHistoryList" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column" GridLinesVisibility="Horizontal" RowHeight="35" BorderThickness="0" Background="Transparent" Margin="0,0,0,15">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="이름" Binding="{Binding StudentName}" Width="80"/>
+                            <DataGridTextColumn Header="학번" Binding="{Binding StudentId}" Width="100"/>
+                            <DataGridTextColumn Header="구분" Binding="{Binding TabType}" Width="80"/>
+                            <DataGridTextColumn Header="상태" Binding="{Binding Status}" Width="100"/>
+                            <DataGridTextColumn Header="일시" Binding="{Binding RequestDate, StringFormat=yyyy-MM-dd HH:mm}" Width="150"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    
+                    <!-- Footer Buttons -->
+                    <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Content="닫기" Background="#F3F4F6" Foreground="#374151" BorderThickness="0" Padding="15,8" Margin="0,0,8,0" FontWeight="Bold" Cursor="Hand" Click="BtnCloseApprovalHistory_Click">
+                            <Button.Resources>
+                                <Style TargetType="Border"><Setter Property="CornerRadius" Value="4"/></Style>
+                            </Button.Resources>
+                        </Button>
+                        <Button Content="대기목록에 다시 추가" Background="#2563EB" Foreground="White" BorderThickness="0" Padding="15,8" FontWeight="Bold" Cursor="Hand" Click="BtnReAddApproval_Click">
+                            <Button.Resources>
+                                <Style TargetType="Border"><Setter Property="CornerRadius" Value="4"/></Style>
+                            </Button.Resources>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- ================= RENTAL HISTORY MODAL ================= -->
+        <Grid x:Name="ModalRentalHistory" Grid.ColumnSpan="2" Background="#90000000" Visibility="Collapsed" Panel.ZIndex="100">
+            <Border Background="White" Width="650" Height="600" CornerRadius="12" Padding="25" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    
+                    <!-- Header -->
+                    <Grid Grid.Row="0" Margin="0,0,0,15">
+                        <TextBlock Text="기자재 대여 및 반납 전체 내역" FontSize="16" FontWeight="Bold" Foreground="#111827"/>
+                        <Button Content="✕" FontSize="16" FontWeight="Bold" Background="Transparent" BorderThickness="0" Cursor="Hand" HorizontalAlignment="Right" Click="BtnCloseRentalHistory_Click"/>
+                    </Grid>
+                    
+                    <!-- List -->
+                    <DataGrid Grid.Row="1" x:Name="GridRentalHistoryList" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column" GridLinesVisibility="Horizontal" RowHeight="35" BorderThickness="0" Background="Transparent" Margin="0,0,0,15">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="대여자" Binding="{Binding StudentName}" Width="80"/>
+                            <DataGridTextColumn Header="기자재명" Binding="{Binding EquipmentType}" Width="180"/>
+                            <DataGridTextColumn Header="대여일" Binding="{Binding RentalDate, StringFormat=yyyy-MM-dd}" Width="100"/>
+                            <DataGridTextColumn Header="반납예정일" Binding="{Binding DueDate, StringFormat=yyyy-MM-dd}" Width="100"/>
+                            <DataGridTextColumn Header="상태" Binding="{Binding StatusDisplay}" Width="100"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    
+                    <!-- Footer Buttons -->
+                    <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Content="닫기" Background="#6B7280" Foreground="White" BorderThickness="0" Padding="20,8" FontWeight="Bold" Cursor="Hand" Click="BtnCloseRentalHistory_Click">
+                            <Button.Resources>
+                                <Style TargetType="Border"><Setter Property="CornerRadius" Value="4"/></Style>
+                            </Button.Resources>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+        <!-- ================= CABINET DETAIL MODAL OVERLAY ================= -->
+        <Grid x:Name="ModalCabinetDetails" Grid.ColumnSpan="2" Background="#80000000" Visibility="Collapsed" Panel.ZIndex="100">
+            <Border Background="White" Width="600" Height="400" CornerRadius="20" Padding="35" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="25" ShadowDepth="0" Color="Black" Opacity="0.25"/>
+                </Border.Effect>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    
+                    <!-- Header buttons -->
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-15,0,0">
+                        <Button x:Name="BtnEditCabinetInfo" Content="정보 수정" Background="#F3F4F6" Foreground="#374151" BorderThickness="0" Padding="15,6" FontSize="12" FontWeight="SemiBold" Cursor="Hand" Click="BtnEditCabinetInfo_Click" Margin="0,0,15,0">
+                            <Button.Resources>
+                                <Style TargetType="Border"><Setter Property="CornerRadius" Value="6"/></Style>
+                            </Button.Resources>
+                        </Button>
+                        <Button x:Name="BtnCloseCabinetModal" Background="Transparent" BorderThickness="0" Cursor="Hand" Click="BtnCloseCabinetModal_Click" Padding="5">
+                            <TextBlock Text="&#xE7E8;" FontFamily="Segoe MDL2 Assets" FontSize="20" Foreground="#111827"/>
+                        </Button>
+                    </StackPanel>
+
+                    <!-- Title -->
+                    <TextBlock x:Name="TxtCabinetModalTitle" Text="캐비닛 00번 상세 정보" FontSize="18" FontWeight="Bold" Foreground="#111827" Margin="0,0,0,20"/>
+
+                    <!-- Fields -->
+                    <Grid Grid.Row="1" Margin="10,0,10,0" VerticalAlignment="Center">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="120"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Name -->
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="이름 : " FontSize="22" FontWeight="Bold" Foreground="#111827" Margin="0,0,0,15"/>
+                        <TextBox x:Name="TxtCabinetModalName" Grid.Row="0" Grid.Column="1" FontSize="22" FontWeight="Bold" Foreground="#111827" Background="Transparent" BorderThickness="0" IsReadOnly="True" Margin="0,0,0,15"/>
+
+                        <!-- ID -->
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="학번 : " FontSize="22" FontWeight="Bold" Foreground="#111827" Margin="0,0,0,15"/>
+                        <TextBox x:Name="TxtCabinetModalId" Grid.Row="1" Grid.Column="1" FontSize="22" FontWeight="Bold" Foreground="#111827" Background="Transparent" BorderThickness="0" IsReadOnly="True" Margin="0,0,0,15"/>
+
+                        <!-- Period -->
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="대여 기간 : " FontSize="22" FontWeight="Bold" Foreground="#111827"/>
+                        <TextBox x:Name="TxtCabinetModalPeriod" Grid.Row="2" Grid.Column="1" FontSize="22" FontWeight="Bold" Foreground="#111827" Background="Transparent" BorderThickness="0" IsReadOnly="True"/>
+                    </Grid>
+
+                    <!-- Save Button (Only visible during edit) -->
+                    <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,15,0,0">
+                        <Button x:Name="BtnSaveCabinetModal" Content="저장" Visibility="Collapsed" Background="#10B981" Foreground="White" BorderThickness="0" Padding="20,8" FontWeight="Bold" Cursor="Hand" Click="BtnSaveCabinetModal_Click">
+                            <Button.Resources>
+                                <Style TargetType="Border"><Setter Property="CornerRadius" Value="4"/></Style>
+                            </Button.Resources>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- ================= LOADING OVERLAY ================= -->
+        <Grid x:Name="ModalLoading" Grid.ColumnSpan="2" Background="#70000000" Visibility="Collapsed" Panel.ZIndex="200">
+            <Border Background="White" Width="300" Height="150" CornerRadius="12" Padding="20" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <TextBlock Text="↻" FontSize="36" Foreground="#2563EB" HorizontalAlignment="Center" RenderTransformOrigin="0.5,0.5">
+                        <TextBlock.RenderTransform>
+                            <RotateTransform x:Name="SpinnerTransform" Angle="0"/>
+                        </TextBlock.RenderTransform>
+                        <TextBlock.Triggers>
+                            <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="SpinnerTransform" Storyboard.TargetProperty="Angle" From="0" To="360" Duration="0:0:1" RepeatBehavior="Forever"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </EventTrigger>
+                        </TextBlock.Triggers>
+                    </TextBlock>
+                    <TextBlock Text="구글 폼 데이터 동기화 중..." FontSize="14" FontWeight="Bold" Foreground="#374151" HorizontalAlignment="Center" Margin="0,15,0,0"/>
+                </StackPanel>
             </Border>
         </Grid>
     </Grid>
