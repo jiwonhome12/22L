@@ -13,5 +13,11 @@
     <PackageReference Include="MiniExcel" Version="1.45.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="SpinnerApp\2026-여름방학_기자제 (노트북(HP OMEN 게이밍 노트북) 대여 현황서양식.xlsx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
  

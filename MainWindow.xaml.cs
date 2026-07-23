@@ -194,11 +194,13 @@ namespace SeatManagerApp
             if (TxtEquipmentPendingCount != null)
                 TxtEquipmentPendingCount.Text = $"{_approvals.Count(a => a.TabType == "기자재")}건";
             
-            if (TxtRentedEquipmentCount != null)
-                TxtRentedEquipmentCount.Text = $"{_rentals.Count}개";
-            
-            if (TxtAvailableEquipmentCount != null)
-                TxtAvailableEquipmentCount.Text = $"{24 - _rentals.Count}개";
+            int mainframeRented = _rentals.Count(r => r.EquipmentType.Contains("VR") || r.EquipmentType.Contains("Quest") || r.EquipmentType.Contains("본체"));
+            int laptopRented = _rentals.Count(r => !r.EquipmentType.Contains("VR") && !r.EquipmentType.Contains("Quest") && !r.EquipmentType.Contains("본체"));
+
+            if (TxtAvailableMainframeCount != null) TxtAvailableMainframeCount.Text = $"{Math.Max(0, 12 - mainframeRented)}개";
+            if (TxtRentedMainframeCount != null) TxtRentedMainframeCount.Text = $"{mainframeRented}개";
+            if (TxtAvailableLaptopCount != null) TxtAvailableLaptopCount.Text = $"{Math.Max(0, 12 - laptopRented)}개";
+            if (TxtRentedLaptopCount != null) TxtRentedLaptopCount.Text = $"{laptopRented}개";
 
             if (TxtCabinetPendingCount != null)
                 TxtCabinetPendingCount.Text = $"{_approvals.Count(a => a.TabType == "캐비닛")}건";
@@ -249,8 +251,13 @@ namespace SeatManagerApp
  
                 BindEquipmentRentals();
  
-                TxtAvailableEquipmentCount.Text = $"{24 - _rentals.Count}개";
-                TxtRentedEquipmentCount.Text = $"{_rentals.Count}개";
+                int mainframeRented = _rentals.Count(r => r.EquipmentType.Contains("VR") || r.EquipmentType.Contains("Quest") || r.EquipmentType.Contains("본체"));
+                int laptopRented = _rentals.Count(r => !r.EquipmentType.Contains("VR") && !r.EquipmentType.Contains("Quest") && !r.EquipmentType.Contains("본체"));
+
+                if (TxtAvailableMainframeCount != null) TxtAvailableMainframeCount.Text = $"{Math.Max(0, 12 - mainframeRented)}개";
+                if (TxtRentedMainframeCount != null) TxtRentedMainframeCount.Text = $"{mainframeRented}개";
+                if (TxtAvailableLaptopCount != null) TxtAvailableLaptopCount.Text = $"{Math.Max(0, 12 - laptopRented)}개";
+                if (TxtRentedLaptopCount != null) TxtRentedLaptopCount.Text = $"{laptopRented}개";
                 TxtEquipmentPendingCount.Text = $"{_approvals.Count(a => a.TabType == "기자재")}건";
             }
             else if (tabGrid == TabCabinet)
@@ -1711,10 +1718,18 @@ namespace SeatManagerApp
             };
             stack.Children.Add(numTxt);
 
+            bool isMatch = false;
+            string query = TxtSearchCabinet != null ? TxtSearchCabinet.Text.Trim().ToLower() : "";
+            bool hasQuery = !string.IsNullOrEmpty(query);
+
             if (_cabinetAllocations.ContainsKey(number))
             {
                 var alloc = _cabinetAllocations[number];
                 border.Background = new SolidColorBrush(Color.FromRgb(239, 246, 255));
+
+                isMatch = alloc.Student.Name.ToLower().Contains(query) || 
+                          alloc.Student.StudentId.ToLower().Contains(query) || 
+                          alloc.Student.Department.ToLower().Contains(query);
 
                 TextBlock studentTxt = new TextBlock
                 {
@@ -1740,6 +1755,20 @@ namespace SeatManagerApp
             {
                 numTxt.FontSize = 13;
                 numTxt.Foreground = new SolidColorBrush(Color.FromRgb(156, 163, 175));
+            }
+
+            if (hasQuery)
+            {
+                if (isMatch)
+                {
+                    border.Opacity = 1.0;
+                    border.BorderBrush = new SolidColorBrush(Color.FromRgb(37, 99, 235));
+                    border.BorderThickness = new Thickness(2);
+                }
+                else
+                {
+                    border.Opacity = 0.2;
+                }
             }
 
             border.Tag = number;
@@ -1953,15 +1982,391 @@ namespace SeatManagerApp
 
         private void BindEquipmentRentals()
         {
+            string query = TxtSearchEquipment != null ? TxtSearchEquipment.Text.Trim().ToLower() : "";
+            var filtered = _rentals.Where(r => 
+                string.IsNullOrEmpty(query) || 
+                r.StudentName.ToLower().Contains(query) || 
+                r.StudentId.ToLower().Contains(query) || 
+                r.Department.ToLower().Contains(query) ||
+                r.EquipmentType.ToLower().Contains(query)
+            ).ToList();
+
             if (GridQuestRentals != null)
             {
                 GridQuestRentals.ItemsSource = null;
-                GridQuestRentals.ItemsSource = _rentals.Where(r => r.EquipmentType.Contains("VR") || r.EquipmentType.Contains("Quest")).ToList();
+                GridQuestRentals.ItemsSource = filtered.Where(r => r.EquipmentType.Contains("VR") || r.EquipmentType.Contains("Quest") || r.EquipmentType.Contains("본체")).ToList();
             }
             if (GridLaptopRentals != null)
             {
                 GridLaptopRentals.ItemsSource = null;
-                GridLaptopRentals.ItemsSource = _rentals.Where(r => !r.EquipmentType.Contains("VR") && !r.EquipmentType.Contains("Quest")).ToList();
+                GridLaptopRentals.ItemsSource = filtered.Where(r => !r.EquipmentType.Contains("VR") && !r.EquipmentType.Contains("Quest") && !r.EquipmentType.Contains("본체")).ToList();
+            }
+        }
+
+        private void BtnImportDashboardExcel_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new Microsoft.Win32.OpenFileDialog
+            {
+                Filter = "Excel Files (*.xlsx)|*.xlsx|All Files (*.*)|*.*",
+                Title = "대시보드 좌석 배치 엑셀 가져오기"
+            };
+            if (dialog.ShowDialog() == true)
+            {
+                try
+                {
+                    var rows = MiniExcelLibs.MiniExcel.Query(dialog.FileName).ToList();
+                    int importedCount = 0;
+                    foreach (IDictionary<string, object> row in rows)
+                    {
+                        var values = row.Values.ToList();
+                        if (values.Count < 2) continue;
+
+                        string col0 = values[0]?.ToString() ?? "";
+                        if (col0 == "SeatNumber" || col0 == "좌석번호" || string.IsNullOrWhiteSpace(col0)) continue;
+
+                        int.TryParse(col0, out int seatNum);
+                        if (seatNum <= 0) continue;
+
+                        string id = values.Count > 1 ? (values[1]?.ToString() ?? "") : "";
+                        string name = values.Count > 2 ? (values[2]?.ToString() ?? "") : "";
+                        string dept = values.Count > 3 ? (values[3]?.ToString() ?? "") : "소프트웨어융합학과";
+                        string advisor = values.Count > 4 ? (values[4]?.ToString() ?? "") : "김동욱 교수";
+                        string email = values.Count > 5 ? (values[5]?.ToString() ?? "") : "";
+                        bool isFixed = false;
+                        if (values.Count > 6)
+                        {
+                            bool.TryParse(values[6]?.ToString() ?? "", out isFixed);
+                        }
+
+                        var targetSeat = _activeSeats.FirstOrDefault(s => s.SeatNumber == seatNum);
+                        if (targetSeat != null && !targetSeat.IsPillar)
+                        {
+                            if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(name))
+                            {
+                                targetSeat.Student = null;
+                            }
+                            else
+                            {
+                                targetSeat.Student = new StudentInfo
+                                {
+                                    StudentId = id,
+                                    Name = name,
+                                    Department = dept,
+                                    Advisor = advisor,
+                                    Email = email
+                                };
+                                targetSeat.IsFixed = isFixed || dept.Contains("대학원");
+                            }
+                            importedCount++;
+                        }
+                    }
+
+                    RenderSeatGrid();
+                    MessageBox.Show($"엑셀 파일로부터 {importedCount}개의 좌석 배치를 적용했습니다.", "가져오기 성공", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"엑셀 파일을 읽는 도중 오류가 발생했습니다: {ex.Message}", "오류", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
+        private void BtnImportMainframeExcel_Click(object sender, RoutedEventArgs e)
+        {
+            ImportEquipmentExcel("본체 (HP Z2 G9)");
+        }
+
+        private void BtnImportLaptopExcel_Click(object sender, RoutedEventArgs e)
+        {
+            ImportEquipmentExcel("노트북(HP OMEN 게이밍 노트북)");
+        }
+
+        private void ImportEquipmentExcel(string targetEquipType)
+        {
+            var dialog = new Microsoft.Win32.OpenFileDialog
+            {
+                Filter = "Excel Files (*.xlsx)|*.xlsx|All Files (*.*)|*.*",
+                Title = $"{targetEquipType} 대여 현황 엑셀 가져오기"
+            };
+            if (dialog.ShowDialog() == true)
+            {
+                try
+                {
+                    var rows = MiniExcelLibs.MiniExcel.Query(dialog.FileName).ToList();
+                    int importedCount = 0;
+                    foreach (IDictionary<string, object> row in rows)
+                    {
+                        var values = row.Values.ToList();
+                        if (values.Count < 2) continue;
+
+                        string col0 = values[0]?.ToString() ?? "";
+                        if (col0 == "번호" || col0 == "No" || col0 == "No." || string.IsNullOrWhiteSpace(col0)) continue;
+
+                        // Skip rows with missing StudentId (Column 8 / Index 8) or StudentName (Column 11 / Index 11)
+                        string id = values.Count > 8 ? (values[8]?.ToString() ?? "") : "";
+                        string studentName = values.Count > 11 ? (values[11]?.ToString() ?? "") : "";
+                        if (string.IsNullOrWhiteSpace(id) || string.IsNullOrWhiteSpace(studentName)) continue;
+
+                        int.TryParse(values.Count > 1 ? (values[1]?.ToString() ?? "") : "", out int qty);
+                        string extra = values.Count > 2 ? (values[2]?.ToString() ?? "") : "";
+                        string loc = values.Count > 3 ? (values[3]?.ToString() ?? "") : "";
+                        string purp = values.Count > 4 ? (values[4]?.ToString() ?? "") : "";
+                        string rem = values.Count > 5 ? (values[5]?.ToString() ?? "") : "";
+                        string dept = values.Count > 6 ? (values[6]?.ToString() ?? "") : "";
+                        string level = values.Count > 7 ? (values[7]?.ToString() ?? "") : "";
+                        string phone = values.Count > 9 ? (values[9]?.ToString() ?? "") : "";
+                        string advisor = values.Count > 10 ? (values[10]?.ToString() ?? "") : "";
+
+                        DateTime rentalDate = _currentSimulatedDate;
+                        if (values.Count > 12 && DateTime.TryParse(values[12]?.ToString() ?? "", out var rd)) rentalDate = rd;
+
+                        int period = 7;
+                        if (values.Count > 13 && DateTime.TryParse(values[13]?.ToString() ?? "", out var dd))
+                        {
+                            period = (dd - rentalDate).Days;
+                            if (period <= 0) period = 7;
+                        }
+
+                        DateTime? retDate = null;
+                        if (values.Count > 14 && DateTime.TryParse(values[14]?.ToString() ?? "", out var retd)) retDate = retd;
+
+                        string equipType = targetEquipType;
+
+                        var rental = new RentalItem
+                        {
+                            Quantity = qty,
+                            ExtraItems = extra,
+                            Location = loc,
+                            Purpose = purp,
+                            Remarks = rem,
+                            Department = dept,
+                            YearLevel = level,
+                            StudentId = id,
+                            Phone = phone,
+                            Advisor = advisor,
+                            StudentName = studentName,
+                            RentalDate = rentalDate,
+                            RentalPeriodDays = period,
+                            ReturnDate = retDate,
+                            EquipmentType = equipType,
+                            IsReturned = retDate != null
+                        };
+
+                        _rentals.Add(rental);
+                        _rentalHistory.Add(rental);
+                        importedCount++;
+                    }
+
+                    BindEquipmentRentals();
+                    UpdateAlertBadges();
+                    MessageBox.Show($"엑셀 파일로부터 {importedCount}건의 기자재 대여 내역을 추가했습니다.", "가져오기 성공", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"엑셀 파일을 읽는 도중 오류가 발생했습니다: {ex.Message}", "오류", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
+        private void BtnImportCabinetExcel_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new Microsoft.Win32.OpenFileDialog
+            {
+                Filter = "Excel Files (*.xlsx)|*.xlsx|All Files (*.*)|*.*",
+                Title = "캐비닛 배정 현황 엑셀 가져오기"
+            };
+            if (dialog.ShowDialog() == true)
+            {
+                try
+                {
+                    var rows = MiniExcelLibs.MiniExcel.Query(dialog.FileName).ToList();
+                    int importedCount = 0;
+                    foreach (IDictionary<string, object> row in rows)
+                    {
+                        var values = row.Values.ToList();
+                        if (values.Count < 2) continue;
+
+                        string col0 = values[0]?.ToString() ?? "";
+                        if (col0 == "CabinetNumber" || col0 == "캐비닛번호" || string.IsNullOrWhiteSpace(col0)) continue;
+
+                        int.TryParse(col0, out int cabNum);
+                        if (cabNum <= 0 || cabNum > 48) continue;
+
+                        string id = values.Count > 1 ? (values[1]?.ToString() ?? "") : "";
+                        string name = values.Count > 2 ? (values[2]?.ToString() ?? "") : "";
+                        string dept = values.Count > 3 ? (values[3]?.ToString() ?? "") : "소프트웨어융합학과";
+                        string period = values.Count > 4 ? (values[4]?.ToString() ?? "") : $"{_currentSimulatedDate:MM/dd}~{_currentSimulatedDate.AddMonths(1):MM/dd}";
+
+                        var student = new StudentInfo
+                        {
+                            StudentId = id,
+                            Name = name,
+                            Department = dept
+                        };
+
+                        _cabinetAllocations[cabNum] = (student, period);
+                        importedCount++;
+                    }
+
+                    RenderCabinetGrid();
+                    UpdateAlertBadges();
+                    MessageBox.Show($"엑셀 파일로부터 {importedCount}개의 캐비닛 배정을 완료했습니다.", "가져오기 성공", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"엑셀 파일을 읽는 도중 오류가 발생했습니다: {ex.Message}", "오류", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
+        private void BtnImportDataManageExcel_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new Microsoft.Win32.OpenFileDialog
+            {
+                Filter = "Excel Files (*.xlsx)|*.xlsx|All Files (*.*)|*.*",
+                Title = "마스터 학생 데이터베이스 엑셀 가져오기"
+            };
+            if (dialog.ShowDialog() == true)
+            {
+                try
+                {
+                    var rows = MiniExcelLibs.MiniExcel.Query(dialog.FileName).ToList();
+                    int importedCount = 0;
+                    foreach (IDictionary<string, object> row in rows)
+                    {
+                        var values = row.Values.ToList();
+                        if (values.Count < 2) continue;
+
+                        string col0 = values[0]?.ToString() ?? "";
+                        if (col0 == "StudentId" || col0 == "학번" || string.IsNullOrWhiteSpace(col0)) continue;
+
+                        string id = col0;
+                        string name = values.Count > 1 ? (values[1]?.ToString() ?? "") : "";
+                        string dept = values.Count > 2 ? (values[2]?.ToString() ?? "") : "소프트웨어융합학과";
+                        string advisor = values.Count > 3 ? (values[3]?.ToString() ?? "") : "김동욱 교수";
+                        string email = values.Count > 4 ? (values[4]?.ToString() ?? "") : "";
+
+                        if (!_masterStudents.Any(m => m.StudentId == id))
+                        {
+                            var student = new StudentInfo
+                            {
+                                StudentId = id,
+                                Name = name,
+                                Department = dept,
+                                Advisor = advisor,
+                                Email = email
+                            };
+                            _masterStudents.Add(student);
+                            importedCount++;
+                        }
+                    }
+
+                    GridMasterStudents.ItemsSource = null;
+                    GridMasterStudents.ItemsSource = _masterStudents;
+                    MessageBox.Show($"엑셀 파일로부터 {importedCount}명의 마스터 학생 정보를 등록했습니다.", "가져오기 성공", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"엑셀 파일을 읽는 도중 오류가 발생했습니다: {ex.Message}", "오류", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
+        private void TxtSearchEquipment_KeyUp(object sender, KeyEventArgs e)
+        {
+            BindEquipmentRentals();
+        }
+
+        private void TxtSearchCabinet_KeyUp(object sender, KeyEventArgs e)
+        {
+            RenderCabinetGrid();
+        }
+
+        private void BtnDeleteSelectedRental_Click(object sender, RoutedEventArgs e)
+        {
+            var selectedItems = new List<RentalItem>();
+            if (GridQuestRentals != null)
+            {
+                foreach (var item in GridQuestRentals.SelectedItems)
+                {
+                    if (item is RentalItem rental)
+                        selectedItems.Add(rental);
+                }
+            }
+            if (GridLaptopRentals != null)
+            {
+                foreach (var item in GridLaptopRentals.SelectedItems)
+                {
+                    if (item is RentalItem rental)
+                        selectedItems.Add(rental);
+                }
+            }
+
+            if (selectedItems.Count == 0)
+            {
+                MessageBox.Show("삭제할 대여 데이터를 목록에서 먼저 선택해 주세요.", "알림", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var result = MessageBox.Show($"선택한 {selectedItems.Count}개의 대여 데이터를 삭제하시겠습니까?", "삭제 확인", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            if (result == MessageBoxResult.Yes)
+            {
+                foreach (var item in selectedItems)
+                {
+                    _rentals.Remove(item);
+                }
+                BindEquipmentRentals();
+                UpdateAlertBadges();
+                MessageBox.Show("선택한 대여 데이터가 삭제되었습니다.", "삭제 완료", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
+
+        private void BtnDownloadTemplate_Click(object sender, RoutedEventArgs e)
+        {
+            string fileName = "2026-여름방학_기자제 (노트북(HP OMEN 게이밍 노트북) 대여 현황서양식.xlsx";
+            string[] possiblePaths = new[]
+            {
+                System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "SpinnerApp", fileName),
+                System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, fileName),
+                System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "SpinnerApp", fileName),
+                System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "SpinnerApp", fileName),
+                System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), fileName)
+            };
+
+            string sourcePath = "";
+            foreach (var p in possiblePaths)
+            {
+                if (System.IO.File.Exists(p))
+                {
+                    sourcePath = p;
+                    break;
+                }
+            }
+
+            if (string.IsNullOrEmpty(sourcePath))
+            {
+                MessageBox.Show("기자재 대여 양식 파일을 찾을 수 없습니다. (SpinnerApp 폴더에 파일이 존재하는지 확인해 주세요)", "오류", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            var dialog = new Microsoft.Win32.SaveFileDialog
+            {
+                Filter = "Excel Files (*.xlsx)|*.xlsx",
+                Title = "기자재 대여 양식 다운로드",
+                FileName = fileName
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                try
+                {
+                    System.IO.File.Copy(sourcePath, dialog.FileName, true);
+                    MessageBox.Show("기자재 대여 템플릿 양식 파일이 성공적으로 다운로드되었습니다.", "다운로드 완료", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"파일 저장 중 오류가 발생했습니다: {ex.Message}", "오류", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
         }
     }

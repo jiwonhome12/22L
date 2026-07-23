@@ -260,7 +260,8 @@
                                 <Button x:Name="BtnSyncData" Content="데이터 동기화" Style="{StaticResource ActionBarBtn}" Margin="0,0,8,0" Click="BtnSyncData_Click"/>
                                 <Button Content="랜덤 배정" Style="{StaticResource ActionBarBtn}" Margin="0,0,8,0" Click="BtnRandomAllocation_Click"/>
                                 <Button x:Name="BtnSeatFixMode" Content="좌석 고정 모드" Style="{StaticResource ActionBarBtn}" Margin="0,0,8,0" Click="BtnSeatFixMode_Click"/>
-                                <Button x:Name="BtnSeatDeleteMode" Content="좌석 데이터 삭제" Style="{StaticResource ActionBarBtn}" Click="BtnSeatDeleteMode_Click"/>
+                                <Button x:Name="BtnSeatDeleteMode" Content="좌석 데이터 삭제" Style="{StaticResource ActionBarBtn}" Margin="0,0,8,0" Click="BtnSeatDeleteMode_Click"/>
+                                <Button x:Name="BtnImportDashboardExcel" Content="📥 엑셀 가져오기" Style="{StaticResource ActionBarBtn}" Click="BtnImportDashboardExcel_Click"/>
                                 <Button x:Name="BtnDeleteSelected" Content="선택된 좌석 삭제" Background="#EF4444" Foreground="White" BorderThickness="0" Padding="15,8" FontWeight="Bold" Margin="8,0,0,0" Visibility="Collapsed" Click="BtnDeleteSelected_Click">
                                     <Button.Resources>
                                         <Style TargetType="Border">
@@ -369,13 +370,12 @@
                                 </StackPanel>
                             </StackPanel>
                         </Border>
-
                         <!-- Action Buttons -->
                         <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                            <Button x:Name="BtnRentalHistory" Content="📋 대여/반납 내역" Style="{StaticResource ActionBarBtn}" Margin="0,0,8,0" Click="BtnRentalHistory_Click"/>
-                            <Button x:Name="BtnEquipmentDelete" Content="기자재 데이터 삭제" Style="{StaticResource ActionBarBtn}" Margin="0,0,8,0" Click="BtnEquipmentDelete_Click"/>
-                            <Button x:Name="BtnEquipmentFix" Content="기자재 데이터 고정" Style="{StaticResource ActionBarBtn}" Margin="0,0,8,0" Click="BtnEquipmentFix_Click"/>
-                            <Button x:Name="BtnEquipmentExport" Content="기자재 데이터 추출" Style="{StaticResource ActionBarBtn}" Click="BtnEquipmentExport_Click"/>
+                            <TextBlock Text="🔍 검색: " VerticalAlignment="Center" Margin="10,0,5,0" Foreground="#374151" FontSize="12" FontWeight="SemiBold"/>
+                            <TextBox x:Name="TxtSearchEquipment" Width="120" Padding="5" VerticalAlignment="Center" Margin="0,0,10,0" KeyUp="TxtSearchEquipment_KeyUp"/>
+                            <Button x:Name="BtnDeleteSelectedRental" Content="🗑️ 데이터 선택 삭제" Style="{StaticResource ActionBarBtn}" Margin="0,0,6,0" Click="BtnDeleteSelectedRental_Click"/>
+                            <Button x:Name="BtnDownloadTemplate" Content="📄 데이터 양식 다운" Style="{StaticResource ActionBarBtn}" Click="BtnDownloadTemplate_Click"/>
                         </StackPanel>
                     </Grid>
 
@@ -416,26 +416,7 @@
 
                     <!-- Section 2 Header & Counters -->
                     <Grid Grid.Row="5" Margin="0,0,0,10">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="기자재 대여 현황" FontSize="16" FontWeight="Bold" Foreground="#111827" VerticalAlignment="Center"/>
-                        
-                        <StackPanel Grid.Column="1" Orientation="Horizontal">
-                            <Border BorderBrush="#D1D5DB" BorderThickness="1.5" CornerRadius="6" Background="White" Padding="15,6" Margin="0,0,10,0">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="사용 가능한 기자재 : " FontSize="12" FontWeight="SemiBold" Foreground="#374151"/>
-                                    <TextBlock x:Name="TxtAvailableEquipmentCount" Text="00개" FontSize="12" FontWeight="Bold" Foreground="#2563EB"/>
-                                </StackPanel>
-                            </Border>
-                            <Border BorderBrush="#D1D5DB" BorderThickness="1.5" CornerRadius="6" Background="White" Padding="15,6">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="사용 중인 기자재 : " FontSize="12" FontWeight="SemiBold" Foreground="#374151"/>
-                                    <TextBlock x:Name="TxtRentedEquipmentCount" Text="00개" FontSize="12" FontWeight="Bold" Foreground="#2563EB"/>
-                                </StackPanel>
-                            </Border>
-                        </StackPanel>
+                        <TextBlock Text="기자재 대여 현황" FontSize="16" FontWeight="Bold" Foreground="#111827" VerticalAlignment="Center"/>
                     </Grid>
 
                     <!-- Section 2 Split DataGrids -->
@@ -452,13 +433,29 @@
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
-                            <TextBlock Grid.Row="0" Text="🕶️ VR 헤드셋 대여 현황" FontSize="14" FontWeight="Bold" Foreground="#374151" Margin="0,0,0,8"/>
+                            <Grid Grid.Row="0" Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="🖥️ 본체 (HP Z2 G9) 대여 현황" FontSize="14" FontWeight="Bold" Foreground="#374151" VerticalAlignment="Center"/>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="0,0,10,0" VerticalAlignment="Center">
+                                    <TextBlock Text="사용가능: " FontSize="11" Foreground="#374151" FontWeight="SemiBold"/>
+                                    <TextBlock x:Name="TxtAvailableMainframeCount" Text="00개" FontSize="11" Foreground="#2563EB" FontWeight="Bold" Margin="0,0,8,0"/>
+                                    <TextBlock Text="사용중: " FontSize="11" Foreground="#374151" FontWeight="SemiBold"/>
+                                    <TextBlock x:Name="TxtRentedMainframeCount" Text="00개" FontSize="11" Foreground="#EF4444" FontWeight="Bold"/>
+                                </StackPanel>
+                                <Button Grid.Column="2" x:Name="BtnImportMainframeExcel" Content="📥 엑셀 가져오기" Style="{StaticResource ActionBarBtn}" Click="BtnImportMainframeExcel_Click" Padding="10,4" FontSize="11"/>
+                            </Grid>
                             <Border Grid.Row="1" Background="White" BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="8" Padding="10">
                                 <DataGrid x:Name="GridQuestRentals" AutoGenerateColumns="False" CanUserAddRows="False" 
+                                          CanUserReorderColumns="False" CanUserSortColumns="False"
+                                          RowDetailsVisibilityMode="VisibleWhenSelected"
                                           HeadersVisibility="Column" GridLinesVisibility="Horizontal" RowHeight="40"
                                           BorderThickness="0" Background="Transparent" AlternatingRowBackground="#F9FAFB">
                                     <DataGrid.Columns>
-                                        <DataGridTemplateColumn Header="상태" Width="60">
+                                        <DataGridTemplateColumn Header="상태" Width="50">
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
                                                     <Ellipse Width="12" Height="12" HorizontalAlignment="Center" VerticalAlignment="Center">
@@ -466,6 +463,9 @@
                                                             <Style TargetType="Ellipse">
                                                                 <Setter Property="Fill" Value="#10B981"/>
                                                                 <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding IsWarning}" Value="True">
+                                                                        <Setter Property="Fill" Value="#F59E0B"/>
+                                                                    </DataTrigger>
                                                                     <DataTrigger Binding="{Binding IsOverdue}" Value="True">
                                                                         <Setter Property="Fill" Value="#EF4444"/>
                                                                     </DataTrigger>
@@ -476,10 +476,13 @@
                                                 </DataTemplate>
                                             </DataGridTemplateColumn.CellTemplate>
                                         </DataGridTemplateColumn>
-                                        <DataGridTextColumn Header="대여자" Binding="{Binding StudentName}" Width="80" IsReadOnly="True"/>
-                                        <DataGridTextColumn Header="기자재 종류" Binding="{Binding EquipmentType}" Width="110" IsReadOnly="True"/>
-                                        <DataGridTextColumn Header="반납 기한" Binding="{Binding DueDate, StringFormat=\{0:yyyy-MM-dd\}}" Width="100" IsReadOnly="True"/>
-                                        <DataGridTemplateColumn Header="작업" Width="*">
+                                        <DataGridTextColumn Header="대여수량" Binding="{Binding Quantity}" Width="60" IsReadOnly="True"/>
+                                        <DataGridTextColumn Header="대여자" Binding="{Binding StudentName}" Width="70" IsReadOnly="True"/>
+                                        <DataGridTextColumn Header="학번" Binding="{Binding StudentId}" Width="90" IsReadOnly="True"/>
+                                        <DataGridTextColumn Header="대여일" Binding="{Binding RentalDate, StringFormat=\{0:yyyy-MM-dd\}}" Width="90" IsReadOnly="True"/>
+                                        <DataGridTextColumn Header="반납예정일" Binding="{Binding DueDate, StringFormat=\{0:yyyy-MM-dd\}}" Width="90" IsReadOnly="True"/>
+                                        <DataGridTextColumn Header="반납일" Binding="{Binding ReturnDate, StringFormat=\{0:yyyy-MM-dd\}}" Width="90" IsReadOnly="True"/>
+                                        <DataGridTemplateColumn Header="작업" Width="60">
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
                                                     <Button Content="반납" Background="#EF4444" Foreground="White" BorderThickness="0" 
@@ -495,6 +498,42 @@
                                             </DataGridTemplateColumn.CellTemplate>
                                         </DataGridTemplateColumn>
                                     </DataGrid.Columns>
+                                    <DataGrid.RowDetailsTemplate>
+                                        <DataTemplate>
+                                            <Border BorderBrush="#E5E7EB" BorderThickness="1" Background="#F9FAFB" Padding="12" CornerRadius="6" Margin="4">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="Auto"/>
+                                                        <RowDefinition Height="Auto"/>
+                                                        <RowDefinition Height="Auto"/>
+                                                    </Grid.RowDefinitions>
+                                                    <!-- Row 0: Student details -->
+                                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="전공 / 학년: " FontWeight="Bold" Foreground="#4B5563" Margin="0,0,5,5"/>
+                                                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding DisplayDeptYear}" Foreground="#1F2937" Margin="0,0,15,5"/>
+                                                    <TextBlock Grid.Row="0" Grid.Column="2" Text="연락처 / 지도교수: " FontWeight="Bold" Foreground="#4B5563" Margin="0,0,5,5"/>
+                                                    <TextBlock Grid.Row="0" Grid.Column="3" Text="{Binding DisplayPhoneAdvisor}" Foreground="#1F2937" Margin="0,0,0,5"/>
+                                                    
+                                                    <!-- Row 1: Rental location & purpose -->
+                                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="사용 장소: " FontWeight="Bold" Foreground="#4B5563" Margin="0,0,5,5"/>
+                                                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Location}" Foreground="#1F2937" Margin="0,0,15,5"/>
+                                                    <TextBlock Grid.Row="1" Grid.Column="2" Text="사용 목적: " FontWeight="Bold" Foreground="#4B5563" Margin="0,0,5,5"/>
+                                                    <TextBlock Grid.Row="1" Grid.Column="3" Text="{Binding Purpose}" Foreground="#1F2937" Margin="0,0,0,5"/>
+
+                                                    <!-- Row 2: Extra items & remarks -->
+                                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="추가 물품: " FontWeight="Bold" Foreground="#4B5563" Margin="0,0,5,0"/>
+                                                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding ExtraItems}" Foreground="#1F2937" Margin="0,0,15,0"/>
+                                                    <TextBlock Grid.Row="2" Grid.Column="2" Text="특이 사항: " FontWeight="Bold" Foreground="#4B5563" Margin="0,0,5,0"/>
+                                                    <TextBlock Grid.Row="2" Grid.Column="3" Text="{Binding Remarks}" Foreground="#1F2937" Margin="0,0,0,0"/>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </DataGrid.RowDetailsTemplate>
                                 </DataGrid>
                             </Border>
                         </Grid>
@@ -505,13 +544,29 @@
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
-                            <TextBlock Grid.Row="0" Text="💻 노트북 대여 현황" FontSize="14" FontWeight="Bold" Foreground="#374151" Margin="0,0,0,8"/>
+                            <Grid Grid.Row="0" Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="💻 노트북(HP OMEN 게이밍 노트북) 대여 현황" FontSize="14" FontWeight="Bold" Foreground="#374151" VerticalAlignment="Center"/>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="0,0,10,0" VerticalAlignment="Center">
+                                    <TextBlock Text="사용가능: " FontSize="11" Foreground="#374151" FontWeight="SemiBold"/>
+                                    <TextBlock x:Name="TxtAvailableLaptopCount" Text="00개" FontSize="11" Foreground="#2563EB" FontWeight="Bold" Margin="0,0,8,0"/>
+                                    <TextBlock Text="사용중: " FontSize="11" Foreground="#374151" FontWeight="SemiBold"/>
+                                    <TextBlock x:Name="TxtRentedLaptopCount" Text="00개" FontSize="11" Foreground="#EF4444" FontWeight="Bold"/>
+                                </StackPanel>
+                                <Button Grid.Column="2" x:Name="BtnImportLaptopExcel" Content="📥 엑셀 가져오기" Style="{StaticResource ActionBarBtn}" Click="BtnImportLaptopExcel_Click" Padding="10,4" FontSize="11"/>
+                            </Grid>
                             <Border Grid.Row="1" Background="White" BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="8" Padding="10">
                                 <DataGrid x:Name="GridLaptopRentals" AutoGenerateColumns="False" CanUserAddRows="False" 
+                                          CanUserReorderColumns="False" CanUserSortColumns="False"
+                                          RowDetailsVisibilityMode="VisibleWhenSelected"
                                           HeadersVisibility="Column" GridLinesVisibility="Horizontal" RowHeight="40"
                                           BorderThickness="0" Background="Transparent" AlternatingRowBackground="#F9FAFB">
                                     <DataGrid.Columns>
-                                        <DataGridTemplateColumn Header="상태" Width="60">
+                                        <DataGridTemplateColumn Header="상태" Width="50">
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
                                                     <Ellipse Width="12" Height="12" HorizontalAlignment="Center" VerticalAlignment="Center">
@@ -519,6 +574,9 @@
                                                             <Style TargetType="Ellipse">
                                                                 <Setter Property="Fill" Value="#10B981"/>
                                                                 <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding IsWarning}" Value="True">
+                                                                        <Setter Property="Fill" Value="#F59E0B"/>
+                                                                    </DataTrigger>
                                                                     <DataTrigger Binding="{Binding IsOverdue}" Value="True">
                                                                         <Setter Property="Fill" Value="#EF4444"/>
                                                                     </DataTrigger>
@@ -529,10 +587,13 @@
                                                 </DataTemplate>
                                             </DataGridTemplateColumn.CellTemplate>
                                         </DataGridTemplateColumn>
-                                        <DataGridTextColumn Header="대여자" Binding="{Binding StudentName}" Width="80" IsReadOnly="True"/>
-                                        <DataGridTextColumn Header="기자재 종류" Binding="{Binding EquipmentType}" Width="110" IsReadOnly="True"/>
-                                        <DataGridTextColumn Header="반납 기한" Binding="{Binding DueDate, StringFormat=\{0:yyyy-MM-dd\}}" Width="100" IsReadOnly="True"/>
-                                        <DataGridTemplateColumn Header="작업" Width="*">
+                                        <DataGridTextColumn Header="대여수량" Binding="{Binding Quantity}" Width="60" IsReadOnly="True"/>
+                                        <DataGridTextColumn Header="대여자" Binding="{Binding StudentName}" Width="70" IsReadOnly="True"/>
+                                        <DataGridTextColumn Header="학번" Binding="{Binding StudentId}" Width="90" IsReadOnly="True"/>
+                                        <DataGridTextColumn Header="대여일" Binding="{Binding RentalDate, StringFormat=\{0:yyyy-MM-dd\}}" Width="90" IsReadOnly="True"/>
+                                        <DataGridTextColumn Header="반납예정일" Binding="{Binding DueDate, StringFormat=\{0:yyyy-MM-dd\}}" Width="90" IsReadOnly="True"/>
+                                        <DataGridTextColumn Header="반납일" Binding="{Binding ReturnDate, StringFormat=\{0:yyyy-MM-dd\}}" Width="90" IsReadOnly="True"/>
+                                        <DataGridTemplateColumn Header="작업" Width="60">
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
                                                     <Button Content="반납" Background="#EF4444" Foreground="White" BorderThickness="0" 
@@ -548,6 +609,42 @@
                                             </DataGridTemplateColumn.CellTemplate>
                                         </DataGridTemplateColumn>
                                     </DataGrid.Columns>
+                                    <DataGrid.RowDetailsTemplate>
+                                        <DataTemplate>
+                                            <Border BorderBrush="#E5E7EB" BorderThickness="1" Background="#F9FAFB" Padding="12" CornerRadius="6" Margin="4">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="Auto"/>
+                                                        <RowDefinition Height="Auto"/>
+                                                        <RowDefinition Height="Auto"/>
+                                                    </Grid.RowDefinitions>
+                                                    <!-- Row 0: Student details -->
+                                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="전공 / 학년: " FontWeight="Bold" Foreground="#4B5563" Margin="0,0,5,5"/>
+                                                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding DisplayDeptYear}" Foreground="#1F2937" Margin="0,0,15,5"/>
+                                                    <TextBlock Grid.Row="0" Grid.Column="2" Text="연락처 / 지도교수: " FontWeight="Bold" Foreground="#4B5563" Margin="0,0,5,5"/>
+                                                    <TextBlock Grid.Row="0" Grid.Column="3" Text="{Binding DisplayPhoneAdvisor}" Foreground="#1F2937" Margin="0,0,0,5"/>
+                                                    
+                                                    <!-- Row 1: Rental location & purpose -->
+                                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="사용 장소: " FontWeight="Bold" Foreground="#4B5563" Margin="0,0,5,5"/>
+                                                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Location}" Foreground="#1F2937" Margin="0,0,15,5"/>
+                                                    <TextBlock Grid.Row="1" Grid.Column="2" Text="사용 목적: " FontWeight="Bold" Foreground="#4B5563" Margin="0,0,5,5"/>
+                                                    <TextBlock Grid.Row="1" Grid.Column="3" Text="{Binding Purpose}" Foreground="#1F2937" Margin="0,0,0,5"/>
+
+                                                    <!-- Row 2: Extra items & remarks -->
+                                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="추가 물품: " FontWeight="Bold" Foreground="#4B5563" Margin="0,0,5,0"/>
+                                                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding ExtraItems}" Foreground="#1F2937" Margin="0,0,15,0"/>
+                                                    <TextBlock Grid.Row="2" Grid.Column="2" Text="특이 사항: " FontWeight="Bold" Foreground="#4B5563" Margin="0,0,5,0"/>
+                                                    <TextBlock Grid.Row="2" Grid.Column="3" Text="{Binding Remarks}" Foreground="#1F2937" Margin="0,0,0,0"/>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </DataGrid.RowDetailsTemplate>
                                 </DataGrid>
                             </Border>
                         </Grid>
@@ -594,10 +691,13 @@
 
                         <!-- Action Buttons -->
                         <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="🔍 검색: " VerticalAlignment="Center" Margin="10,0,5,0" Foreground="#374151" FontSize="12" FontWeight="SemiBold"/>
+                            <TextBox x:Name="TxtSearchCabinet" Width="120" Padding="5" VerticalAlignment="Center" Margin="0,0,10,0" KeyUp="TxtSearchCabinet_KeyUp"/>
                             <Button x:Name="BtnShowApprovalHistory" Content="📋 승인/반려 내역" Style="{StaticResource ActionBarBtn}" Margin="0,0,8,0" Click="BtnShowApprovalHistory_Click"/>
                             <Button x:Name="BtnCabinetDelete" Content="캐비닛 데이터 삭제" Style="{StaticResource ActionBarBtn}" Margin="0,0,8,0" Click="BtnCabinetDelete_Click"/>
                             <Button x:Name="BtnCabinetFix" Content="캐비닛 데이터 고정" Style="{StaticResource ActionBarBtn}" Margin="0,0,8,0" Click="BtnCabinetFix_Click"/>
-                            <Button x:Name="BtnCabinetExport" Content="캐비닛 데이터 추출" Style="{StaticResource ActionBarBtn}" Click="BtnCabinetExport_Click"/>
+                            <Button x:Name="BtnCabinetExport" Content="캐비닛 데이터 추출" Style="{StaticResource ActionBarBtn}" Margin="0,0,8,0" Click="BtnCabinetExport_Click"/>
+                            <Button x:Name="BtnImportCabinetExcel" Content="📥 엑셀 가져오기" Style="{StaticResource ActionBarBtn}" Click="BtnImportCabinetExcel_Click"/>
                         </StackPanel>
                     </Grid>
 
@@ -807,12 +907,13 @@
                             <TextBlock Text="검색어 (학번/이름/지도교수): " FontSize="13" FontWeight="SemiBold" Foreground="#374151" VerticalAlignment="Center" Margin="0,0,8,0"/>
                             <TextBox x:Name="TxtSearchStudent" Width="200" Padding="5" VerticalContentAlignment="Center" KeyUp="TxtSearchStudent_KeyUp" Margin="0,0,10,0"/>
                             <Button Content="🔍 검색" Style="{StaticResource ActionBarBtn}" Padding="15,6" Click="BtnSearchStudent_Click" Margin="0,0,5,0"/>
-                            <Button Style="{StaticResource ActionBarBtn}" Padding="15,6" Click="BtnClearStudentSearch_Click">
+                            <Button Style="{StaticResource ActionBarBtn}" Padding="15,6" Click="BtnClearStudentSearch_Click" Margin="0,0,8,0">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE72C;" Margin="0,0,5,0" VerticalAlignment="Center"/>
                                     <TextBlock Text="전체보기" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </Button>
+                            <Button x:Name="BtnImportDataManageExcel" Content="📥 엑셀 가져오기" Style="{StaticResource ActionBarBtn}" Padding="15,6" Click="BtnImportDataManageExcel_Click"/>
                         </StackPanel>
                     </Border>
 

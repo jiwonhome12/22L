@@ -71,7 +71,23 @@ namespace SeatManagerApp
         public DateTime DueDate => RentalDate.AddDays(RentalPeriodDays);
         public bool IsReturned { get; set; } = false;
         public bool IsOverdue => DueDate < new DateTime(2026, 7, 16);
-        public string StatusDisplay => IsReturned ? "반납 완료" : (IsOverdue ? "연체됨" : "대여중");
+        public bool IsWarning => !IsReturned && !IsOverdue && (DueDate - new DateTime(2026, 7, 16)).TotalDays <= 7;
+        public string StatusDisplay => IsReturned ? "반납 완료" : (IsOverdue ? "연체됨" : (IsWarning ? "반납 임박" : "대여중"));
+
+        // Columns requested in screenshot
+        public int Quantity { get; set; } = 1; // 대여수량
+        public string ExtraItems { get; set; } = string.Empty; // 추가 대여물품(수량)
+        public string Location { get; set; } = "DSU 창의공간"; // 사용장소
+        public string Purpose { get; set; } = "개인 실습"; // 사용목적
+        public string Remarks { get; set; } = ""; // 특이사항
+        public string Department { get; set; } = "소프트웨어융합학과"; // 전공
+        public string YearLevel { get; set; } = "3학년"; // 학년
+        public string StudentId { get; set; } = "20261234"; // 학번
+        public string Phone { get; set; } = "010-0000-0000"; // 연락처
+        public string Advisor { get; set; } = "김동욱 교수"; // 지도교수
+        public DateTime? ReturnDate { get; set; } // 반납일
+        public string DisplayDeptYear => $"{Department} / {YearLevel}";
+        public string DisplayPhoneAdvisor => $"{Phone} / {Advisor}";
     }
 
     public class ApprovalRequest
